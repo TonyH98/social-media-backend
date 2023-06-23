@@ -1,0 +1,4 @@
+DROP DATABASE IF EXISTS social;
+CREATE DATABASE social;
+
+\c social;
