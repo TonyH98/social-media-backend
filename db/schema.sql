@@ -20,8 +20,8 @@ CREATE TABLE users(
 
 DROP TABLE IF EXISTS posts;
 CREATE TABLE posts(
-    id SERIAL PRIMARY KEY
-    users_id INTEGER REFERENCES users(id),
+    id SERIAL PRIMARY KEY,
+    user_name TEXT REFERENCES users(username),
     content VARCHAR(500) NOT NULL,
     date_created DATE DEFAULT CURRENT_DATE,
     likes INTEGER CHECK (likes >= 0),
@@ -33,7 +33,7 @@ DROP TABLE IF EXISTS replies;
 CREATE TABLE replies(
     id SERIAL PRIMARY KEY,
     posts_id INTEGER REFERENCES posts(id),
-    users_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id),
     content VARCHAR(500) NOT NULL,
     date_created DATE DEFAULT CURRENT_DATE,
     likes INTEGER CHECK (likes >= 0),
