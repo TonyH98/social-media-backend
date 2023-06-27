@@ -1,8 +1,12 @@
 const express = require("express")
 
+const posts = require("./PostsController")
+
 const {getAllUsers, getUser, newUser, loginUser} = require("../queries/users")
 
-const users = express.Router({mergeParams: true})
+const users = express.Router()
+
+users.use("/:username/posts", posts)
 
 users.get("/", async (req ,res) => {
     const allUsers = await getAllUsers();

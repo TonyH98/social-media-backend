@@ -77,3 +77,5 @@ const deletePosts = async (id) => {
         return error
     }
 }
+
+module.exports = {getAllPosts, createPost, updatePost, deletePosts}
