@@ -10,10 +10,14 @@ app.use(express.json())
 
 const user = require("./controller/UsersController")
 
+const note = require("./controller/notificationsController")
+
 app.use("/", (req , res) => {
     res.send("Welcome to the social media app")
 })
 
 app.use("/users", user)
+
+app.use("/notifications", note)
 
 module.exports = app

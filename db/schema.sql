@@ -19,9 +19,10 @@ CREATE TABLE users(
 );
 
 DROP TABLE IF EXISTS posts;
-CREATE TABLE posts(
+CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
     user_name TEXT REFERENCES users(username),
+    user_id INTEGER REFERENCES users(id),
     content VARCHAR(500) NOT NULL,
     date_created DATE DEFAULT CURRENT_DATE,
     likes INTEGER CHECK (likes >= 0),
@@ -29,31 +30,33 @@ CREATE TABLE posts(
     views INTEGER DEFAULT 0
 );
 
-DROP TABLE IF EXISTS replies;
-CREATE TABLE replies(
-    id SERIAL PRIMARY KEY,
-    posts_id INTEGER REFERENCES posts(id),
-    user_id INTEGER REFERENCES users(id),
-    content VARCHAR(500) NOT NULL,
-    date_created DATE DEFAULT CURRENT_DATE,
-    likes INTEGER CHECK (likes >= 0),
-    dislikes INTEGER CHECK (dislikes >= 0),
 
-);
+-- DROP TABLE IF EXISTS replies;
+-- CREATE TABLE replies(
+--     id SERIAL PRIMARY KEY,
+--     posts_id INTEGER REFERENCES posts(id),
+--     user_id INTEGER REFERENCES users(id),
+--     content VARCHAR(500) NOT NULL,
+--     date_created DATE DEFAULT CURRENT_DATE,
+--     likes INTEGER CHECK (likes >= 0),
+--     dislikes INTEGER CHECK (dislikes >= 0),
+
+-- );
 
 DROP TABLE IF EXISTS favorite_posts;
 CREATE TABLE favorite_posts(
     favorites BOOLEAN DEFAULT TRUE,
     selected BOOLEAN DEFAULT FALSE,
-    posts INTEGER,
-    users_id INTEGER
+    users_id INTEGER REFERENCES users(id),
+    creator_id INTEGER REFERENCES posts(user_id),
+    posts_id INTEGER
 );
 
 DROP TABLE IF EXISTS users_followers;
 CREATE TABLE users_followers(
     follow BOOLEAN DEFAULT TRUE,
     selected BOOLEAN DEFAULT FALSE,
-   follower_id INTEGER REFERENCES users(id),
+    follower_id INTEGER REFERENCES users(id),
     followee_id INTEGER REFERENCES users(id),
     PRIMARY KEY(follower_id m followee_id)
 );
@@ -62,6 +65,8 @@ DROP TABLE IF EXISTS notifications;
 CREATE TABLE notifications(
     id SERIAL PRIMARY KEY,
     users_id INTEGER REFERENCES users(id),
+    sender_id INTEGER REFERENCES users(id),
     posts_id INTEGER REFERENCES posts(id),
-    is_read BOOLEAN DEFAULT FALSE
+    is_read BOOLEAN DEFAULT FALSE,
+    selected BOOLEAN DEFAULT FALSE
 );
