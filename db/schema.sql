@@ -48,7 +48,7 @@ CREATE TABLE favorite_posts(
     favorites BOOLEAN DEFAULT TRUE,
     selected BOOLEAN DEFAULT FALSE,
     users_id INTEGER REFERENCES users(id),
-    creator_id INTEGER REFERENCES posts(user_id),
+    creator_id INTEGER,
     posts_id INTEGER
 );
 
@@ -59,7 +59,7 @@ CREATE TABLE users_followers(
     added BOOLEAN DEFAULT TRUE,
     user_id INTEGER REFERENCES users(id),
     following_id INTEGER REFERENCES users(id),
-    UNIQUE(follower_id, followee_id, added)
+    UNIQUE(user_id, following_id, added)
 );
 
 DROP TABLE IF EXISTS notifications;

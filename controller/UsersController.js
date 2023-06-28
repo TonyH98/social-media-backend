@@ -4,6 +4,8 @@ const posts = require("./PostsController")
 
 const {getAllUsers, getUser, newUser, loginUser} = require("../queries/users")
 
+
+const {checkPassword , checkEmail} = require("../middleware/userMiddleware")
 const users = express.Router()
 
 users.use("/:username/posts", posts)
@@ -41,7 +43,7 @@ users.get("/:id", async (req , res) => {
 
 })
 
-users.post("/signup", checkPassword, checkEmail, checkPhoneNumber, async(req , res) => {
+users.post("/signup", checkPassword, checkEmail, async(req , res) => {
 
     const user = await newUser(req.body);
     
