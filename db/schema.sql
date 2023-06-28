@@ -56,9 +56,10 @@ DROP TABLE IF EXISTS users_followers;
 CREATE TABLE users_followers(
     follow BOOLEAN DEFAULT TRUE,
     selected BOOLEAN DEFAULT FALSE,
-    follower_id INTEGER REFERENCES users(id),
-    followee_id INTEGER REFERENCES users(id),
-    PRIMARY KEY(follower_id m followee_id)
+    added BOOLEAN DEFAULT TRUE,
+    user_id INTEGER REFERENCES users(id),
+    following_id INTEGER REFERENCES users(id),
+    UNIQUE(follower_id, followee_id, added)
 );
 
 DROP TABLE IF EXISTS notifications;
