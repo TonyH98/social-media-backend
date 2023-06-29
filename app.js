@@ -35,7 +35,7 @@ app.use("/favorites", favorite)
 
 app.use("/follow", follow)
 
-app._router("/plans", plans)
+app.use("/plans", plans)
 
 const isAuthenticated = (req , res , next) => {
     if(req.isAuthenticated()){
