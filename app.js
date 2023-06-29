@@ -20,6 +20,9 @@ const favorite = require("./controller/favoritesController")
 
 const follow = require("./controller/followController")
 
+const plans = require("./controller/membershipController")
+
+
 app.use("/", (req , res) => {
     res.send("Welcome to the social media app")
 })
@@ -31,6 +34,8 @@ app.use("/notifications", note)
 app.use("/favorites", favorite)
 
 app.use("/follow", follow)
+
+app._router("/plans", plans)
 
 const isAuthenticated = (req , res , next) => {
     if(req.isAuthenticated()){

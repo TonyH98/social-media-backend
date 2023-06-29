@@ -75,11 +75,11 @@ CREATE TABLE notifications(
 
 DROP TABLE IF EXISTS memberships;
 CREATE TABLE memberships(
-    id SERIAL PRIMARY,
+    id SERIAL PRIMARY KEY,
     product_name TEXT,
     images TEXT,
     description TEXT,
-    price INTEGER,
+    price INTEGER
 );
 
 DROP TABLE IF EXISTS users_memberships;
@@ -87,6 +87,5 @@ CREATE TABLE users_memberships(
     user_id INTEGER REFERENCES users(id),
     memberships_id INTEGER REFERENCES memberships(id),
     date_created DATE DEFAULT CURRENT_DATE,
-    quantity INTEGER DEFAULT 1,
-    CHECK(quantity === 1)
-)
+    quantity INTEGER DEFAULT 1
+);
