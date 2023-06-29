@@ -31,6 +31,14 @@ CREATE TABLE posts (
 );
 
 
+CREATE TABLE post_reactions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    post_id INTEGER REFERENCES posts(id),
+    reaction_type VARCHAR(10) CHECK (reaction_type IN ('like', 'dislike')),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- DROP TABLE IF EXISTS replies;
 -- CREATE TABLE replies(
 --     id SERIAL PRIMARY KEY,
