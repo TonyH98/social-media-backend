@@ -1,6 +1,6 @@
 const express = require("express")
 
-const {getAllPosts, createPost, updatePost, deletePosts, createReaction, getReaction, createReaction} = require("../queries/Posts")
+const {getAllPosts, createPost, updatePost, deletePosts, createReaction, getReaction} = require("../queries/Posts")
 
 
 const posts = express.Router({mergeParams: true})
