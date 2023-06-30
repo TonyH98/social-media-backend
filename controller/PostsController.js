@@ -68,4 +68,19 @@ posts.post("/:userId/react/:postId", async (req , res) => {
 })
 
 
+posts.get("/reaction/:id" , async (req , res) => {
+
+    const {username, id} = req.params
+
+    try{
+        const allReaction = await getReaction(username, id)
+        res.json(allReaction)
+    }
+    catch(error){
+        res.json(error)
+    }
+
+
+})
+
 module.exports = posts
