@@ -10,7 +10,7 @@ app.use(cors())
 
 app.use(express.json())
 
-app.use(express.static('public'))
+
 
 const user = require("./controller/UsersController")
 
@@ -23,10 +23,6 @@ const follow = require("./controller/followController")
 const plans = require("./controller/membershipController")
 
 
-app.use("/", (req , res) => {
-    res.send("Welcome to the social media app")
-})
-
 app.use("/users", user)
 
 app.use("/notifications", note)
@@ -36,6 +32,10 @@ app.use("/favorites", favorite)
 app.use("/follow", follow)
 
 app.use("/plans", plans)
+
+app.use("/", (req , res) => {
+    res.send("Welcome to the social media app")
+})
 
 const isAuthenticated = (req , res , next) => {
     if(req.isAuthenticated()){

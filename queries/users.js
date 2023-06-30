@@ -10,6 +10,7 @@ const getAllUsers = async () => {
         return allUsers
     }
     catch(err){
+        console.log(err)
         return err
     }
 }
@@ -57,24 +58,25 @@ const newUser = async (user) => {
             return newUser
     }
     catch(err){
+        console.log(err)
         return err
     }
 }
 
 const loginUser = async (user) => {
 
-    const {password , username} = user
+    const {password , email} = user
 
     try {
         const oneUser = await db.one(
             "SELECT * FROM users WHERE email=$1",
-            username
+            email
         );
         
         // Check if the user's information exists in the database and if the provided password matches the one stored in the database.
         if (oneUser && await bcrypt.compare(password, oneUser.password)) {
-            const {username , id} = oneUser;
-            return {username , id};
+            const {email , id} = oneUser;
+            return {email , id};
         } else {
             // If the provided credentials are incorrect, throw an error to prevent the user from logging in.
             throw new Error("Invalid email or password.");

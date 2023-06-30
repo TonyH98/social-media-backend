@@ -11,7 +11,7 @@ const getAllPosts = async (user_name) => {
                 'lastname', users.lastname,
                 'profile_name', users.profile_name,
                 'profile_img', users.profile_img
-            ) AS creator, posts.likes, posts.user_id, posts.dislikes, posts.views
+            ) AS creator, posts.user_id, posts.views
             FROM posts
             JOIN users ON posts.user_name = users.username
             WHERE posts.user_name = $1`,
@@ -29,8 +29,8 @@ const getAllPosts = async (user_name) => {
 const createPost = async (post) => {
     try {
         const addPost = await db.one(
-            'INSERT INTO posts (user_name, content, likes, dislikes, views, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [post.user_name, post.content, 0, 0, 0, post.user_id]
+            'INSERT INTO posts (user_name, content, views, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
+            [post.user_name, post.content, 0, post.user_id]
         );
         const metionedUsers = post.content.match(/@(\w+)/g)
 
@@ -41,13 +41,14 @@ const createPost = async (post) => {
                 const user = await db.oneOrNone(`SELECT id FROM users WHERE username = $1`, username)
 
                 if(user){
-                    await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false])
+                    await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false])
                 }
             }
         }
 
         return addPost;
     } catch (error) {
+        console.log(error)
         return error;
     }
 };

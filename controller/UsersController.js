@@ -47,9 +47,6 @@ users.post("/signup", checkPassword, checkEmail, async(req , res) => {
 
     const user = await newUser(req.body);
     
-
-    
-    
     const {id , username} = user
     
     res.status(200).json({username, id});
@@ -59,9 +56,9 @@ users.post("/signup", checkPassword, checkEmail, async(req , res) => {
     users.post("/login", async (req , res) => {
         const user = await loginUser(req.body)
     
-        if(user.username){
-            const {id , username} = user
-            res.status(200).json({message: "Login Successful", id, username});
+        if(user.email){
+            const {id , email} = user
+            res.status(200).json({message: "Login Successful", id, email});
         }
         else{
             res.status(401).json({message: "User Not Found"})
