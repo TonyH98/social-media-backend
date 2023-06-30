@@ -55,8 +55,8 @@ const createPost = async (post) => {
 const updatePost = async (post , id) => {
     try{
         const updatePost = await db.one(
-            `UPDATE posts SET likes = $1, dislikes = $2, views = $3 WHERE id=$4 `,
-            [post.likes, post.dislikes, post.views, id]
+            `UPDATE posts SET views = $1 WHERE id=$2 `,
+            [post.views, id]
         )
         return updatePost
     }
@@ -78,4 +78,60 @@ const deletePosts = async (id) => {
     }
 }
 
-module.exports = {getAllPosts, createPost, updatePost, deletePosts}
+const createReaction = async (react , userId, postId) => {
+    try {
+      const existing = await db.oneOrNone(
+        `SELECT reaction_type FROM post_reactions
+        WHERE user_id =$1 and post_id = $2`,
+        [react, userId , postId]
+      )
+
+      if(existing){
+        if(existing.reaction_type === react.reaction_type){
+            await db.none(
+                `DELETE FROM post_reactions WHERE user_id =$1 AND post_id =$2`,
+                [userId , postId]
+            )
+        }
+        else{
+            await db.none(
+                `UPDATE post_reactions SET reaction_type = $1 WHERE user_id = $2 AND post_id = $3`,
+                [react, userId , postId]
+            )
+        }
+      }
+      else{
+        await db.none(
+            `INSERT INTO post_reactions (user_id, post_id, reaction_type)
+             VALUES ($1, $2, $3)`,
+            [react, userId , postId]
+          );
+      }
+      return true
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  };
+  
+  const getReaction = async (id) => {
+    try {
+      const getReactions = db.one(
+        `SELECT
+        COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
+        COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
+        FROM post_reactions
+         WHERE post_id = $1 ;`,
+        id
+      );
+      return getReactions;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  };
+
+  const deleteReaction = async 
+  
+
+module.exports = {getAllPosts, createPost, updatePost, deletePosts, createReaction, getReaction}

@@ -1,6 +1,6 @@
 const express = require("express")
 
-const {getAllPosts, createPost, updatePost, deletePosts} = require("../queries/Posts")
+const {getAllPosts, createPost, updatePost, deletePosts, createReaction, getReaction, createReaction} = require("../queries/Posts")
 
 
 const posts = express.Router({mergeParams: true})
@@ -49,5 +49,23 @@ posts.put("/:id", async (req , res) => {
 
     res.status(200).json(updatedPost);
 })
+
+
+posts.post("/:userId/react/:postId", async (req , res) => {
+    try{
+
+        const {userId , postId} = req.params
+
+        const createReactions = await createReaction(req.body, userId, postId)
+
+        res.json(createReactions)
+
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+})
+
 
 module.exports = posts

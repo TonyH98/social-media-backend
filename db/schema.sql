@@ -25,18 +25,14 @@ CREATE TABLE posts (
     user_id INTEGER REFERENCES users(id),
     content VARCHAR(500) NOT NULL,
     date_created DATE DEFAULT CURRENT_DATE,
-    likes INTEGER CHECK (likes >= 0),
-    dislikes INTEGER CHECK (dislikes >= 0),
     views INTEGER DEFAULT 0
 );
 
-
+DROP TABLE IF EXISTS post_reactions;
 CREATE TABLE post_reactions (
-    id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     post_id INTEGER REFERENCES posts(id),
-    reaction_type VARCHAR(10) CHECK (reaction_type IN ('like', 'dislike')),
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    reaction_type VARCHAR(10) CHECK (reaction_type IN ('like', 'dislike'))
 );
 
 -- DROP TABLE IF EXISTS replies;
