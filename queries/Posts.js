@@ -131,7 +131,5 @@ const createReaction = async (react , userId, postId) => {
     }
   };
 
-  const deleteReaction = async 
-  
 
 module.exports = {getAllPosts, createPost, updatePost, deletePosts, createReaction, getReaction}
