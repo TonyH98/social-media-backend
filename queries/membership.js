@@ -23,15 +23,15 @@ const getMembershipPlan = async (id) => {
 }
 
 
-const getUserMembership = async (userId, planId) => {
+const getUserMembership = async (userId) => {
     try{
         const userMemeber = await db.one(
-            `SELECT um.user_id, um.membership_id, um.date_created, m.product_name
+            `SELECT um.user_id, um.memberships_id, um.date_created, m.product_name, m.images
             FROM users_memberships um
             JOIN users u ON u.id = um.user_id
             JOIN memberships m ON m.id = um.memberships_id
-            WHERE um.users_id =$1 AND um.memberships_id =$2`,
-            [userId , planId]
+            WHERE um.user_id =$1`,
+            userId
         )
         return userMemeber
     }
@@ -44,8 +44,8 @@ const getUserMembership = async (userId, planId) => {
 const addMemebership = async (userId, planId) => {
     try{
         const add = await db.none(
-            `INSERT INTO users_memberships (user_id , membership_id) VALUES($1 , $2)`,
-            [userId , planId]
+            `INSERT INTO users_memberships (user_id , memberships_id, quantity) VALUES($1 , $2, $3)`,
+            [userId , planId, 1]
         )
         return !add
     }

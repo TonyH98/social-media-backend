@@ -1,17 +1,17 @@
 const express = require("express")
 
-const  {getAllNotifications,deleteNotifications} = require("../queries/notifications")
+const  {getAllPostNotifications, deleteNotifications, getAllReplyNotifications} = require("../queries/notifications")
 
 
 
 const note = express.Router()
 
-note.get("/:id", async(req , res) => {
+note.get("/:id/posts", async(req , res) => {
 
     const {id} = req.params
 
     try{
-        const allNote = await getAllNotifications(id)
+        const allNote = await getAllPostNotifications(id)
         res.json(allNote)
     }
     catch(error){
@@ -33,5 +33,20 @@ note.delete("/:id", async (req , res) => {
     }
 })
 
+
+note.get("/:id/reply", async(req , res) => {
+
+    const {id} = req.params
+
+    try{
+        const allNote = await getAllReplyNotifications(id)
+        res.json(allNote)
+    }
+    catch(error){
+        res.json(error)
+    }
+
+
+})
 
 module.exports = note

@@ -38,7 +38,7 @@ const {id} = req.params
 })
 
 
-plans.get("/:userId/plan/:planId", async (req , res) => {
+plans.get("/:userId/plan", async (req , res) => {
 
 const {userId , planId} = req.params
 

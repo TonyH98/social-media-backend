@@ -24,8 +24,7 @@ CREATE TABLE posts (
     user_name TEXT REFERENCES users(username),
     user_id INTEGER REFERENCES users(id),
     content VARCHAR(500) NOT NULL,
-    date_created DATE DEFAULT CURRENT_DATE,
-    views INTEGER DEFAULT 0
+    date_created DATE DEFAULT CURRENT_DATE
 );
 
 DROP TABLE IF EXISTS post_reactions;
@@ -35,17 +34,14 @@ CREATE TABLE post_reactions (
     reaction_type VARCHAR(10) CHECK (reaction_type IN ('like', 'dislike'))
 );
 
--- DROP TABLE IF EXISTS replies;
--- CREATE TABLE replies(
---     id SERIAL PRIMARY KEY,
---     posts_id INTEGER REFERENCES posts(id),
---     user_id INTEGER REFERENCES users(id),
---     content VARCHAR(500) NOT NULL,
---     date_created DATE DEFAULT CURRENT_DATE,
---     likes INTEGER CHECK (likes >= 0),
---     dislikes INTEGER CHECK (dislikes >= 0),
-
--- );
+DROP TABLE IF EXISTS replies;
+CREATE TABLE replies(
+    id SERIAL PRIMARY KEY,
+    posts_id INTEGER REFERENCES posts(id),
+    user_id INTEGER REFERENCES users(id),
+    content VARCHAR(500) NOT NULL,
+    date_created DATE DEFAULT CURRENT_DATE
+);
 
 DROP TABLE IF EXISTS favorite_posts;
 CREATE TABLE favorite_posts(
@@ -72,6 +68,7 @@ CREATE TABLE notifications(
     users_id INTEGER REFERENCES users(id),
     sender_id INTEGER REFERENCES users(id),
     posts_id INTEGER REFERENCES posts(id),
+    reply_id INTEGER REFERENCES replies(id),
     is_read BOOLEAN DEFAULT FALSE,
     selected BOOLEAN DEFAULT FALSE
 );

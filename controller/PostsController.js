@@ -1,9 +1,14 @@
 const express = require("express")
 
-const {getAllPosts, createPost, updatePost, deletePosts, createReaction, getReaction} = require("../queries/Posts")
+const {getAllPosts, createPost, deletePosts, createReaction, getReaction} = require("../queries/Posts")
 
 
 const posts = express.Router({mergeParams: true})
+
+const reply = require("./repliesController")
+
+posts.use("/:postId/reply", reply)
+
 
 posts.get("/", async (req , res) => {
 
@@ -39,15 +44,6 @@ posts.delete("/:id", async (req , res) => {
     else{
         res.status(404).json("Post not found")
     }
-})
-
-
-posts.put("/:id", async (req , res) => {
-    const {id} = req.params;
-
-    const updatedPost = await updatePost(id, req.body);
-
-    res.status(200).json(updatedPost);
 })
 
 
