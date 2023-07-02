@@ -1,4 +1,7 @@
 const db = require("../db/dbConfig")
+const nodemailer = require('nodemailer')
+
+const password = process.env.Email_Password
 
 const getReplies = async (postId) => {
     try{
@@ -34,7 +37,7 @@ const transporter = nodemailer.createTransport({
     secure: true,
     auth: {
       user: 'tonyhoangtesting@gmail.com',
-      pass: 'mkikxfvggubdtdze'
+      pass: password
     }
   });
   
