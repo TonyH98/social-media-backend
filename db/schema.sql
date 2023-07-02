@@ -28,6 +28,22 @@ CREATE TABLE posts (
     date_created DATE DEFAULT CURRENT_DATE
 );
 
+
+DROP TABLE IF EXISTS hashtags;
+CREATE TABLE hashtags(
+    id SERIAL PRIMARY KEY,
+    tag_names TEXT,
+    CONSTRAINT unique_tag_name UNIQUE (tag_names)
+)
+
+DROP TABLE IF EXISTS post_hashtags;
+CREATE TABLE post_hashtags (
+    post_id INTEGER REFERENCES posts(id),
+    hashtag_id INTEGER REFERENCES hashtags(id),
+    PRIMARY KEY (post_id, hashtag_id)
+);
+
+
 DROP TABLE IF EXISTS post_reactions;
 CREATE TABLE post_reactions (
     user_id INTEGER REFERENCES users(id),

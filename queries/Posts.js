@@ -54,26 +54,45 @@ async function sendEmail(toEmail, firstName) {
 
 const createPost = async (post) => {
   try {
-    const addPost = await db.one(
-      'INSERT INTO posts (user_name, content, user_id) VALUES ($1, $2, $3) RETURNING *',
-      [post.user_name, post.content, post.user_id]
-    );
+    const addPost = await db.tx(async (t) => {
+      const insertedPost = await t.one(
+        'INSERT INTO posts (user_name, content, user_id) VALUES ($1, $2, $3) RETURNING *',
+        [post.user_name, post.content, post.user_id]
+      );
 
-    const mentionedUsers = post.content.match(/@(\w+)/g);
+      const mentionedUsers = post.content.match(/@(\w+)/g);
 
-    if (mentionedUsers) {
-      for (const mention of mentionedUsers) {
-        const username = mention.substring(1);
-        const user = await db.oneOrNone('SELECT id, email, firstname, notifications FROM users WHERE username = $1', username);
-
-        if (user) {
-          await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false]);
-        if(user.notifications){
-          await sendEmail(user.email, user.firstname);
-        }  
+      if (mentionedUsers) {
+        for (const mention of mentionedUsers) {
+          const username = mention.substring(1);
+          const user = await db.oneOrNone('SELECT id, email, firstname, notifications FROM users WHERE username = $1', username);
+      
+          if (user) {
+            await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false]);
+          if(user.notifications){
+            await sendEmail(user.email, user.firstname);
+          }  
+          }
         }
       }
-    }
+
+      const hashtags = post.content.match(/#(\w+)/g);
+
+      if(hashtags){
+        for(const hash of hashtags){
+          try{
+            await t.none('INSERT INTO hashtags (tag_name) VALUES ($1)', hash);
+          }
+          catch(error){
+            if(error.code !== '23505'){
+              throw error
+            }
+          }
+        }
+      }
+
+      return insertedPost;
+    });
 
     return addPost;
   } catch (error) {
@@ -82,7 +101,7 @@ const createPost = async (post) => {
   }
 };
 
-    
+
 const deletePosts = async (id) => {
     try{
         const deletePost = await db.one(
