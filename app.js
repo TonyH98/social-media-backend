@@ -1,5 +1,6 @@
 const express = require('express')
 
+
 const stripe = require("stripe")("sk_test_51McALmHgd5U2y6vdLJiKvnZq8wWKDvkf3LocRNeV3zVlUwUT0qu9DjPcMtVBIPymxhfvNTQTdbWtdl8ChFKC4oD500pYsmEHeG")
 
 const cors = require('cors')
@@ -9,7 +10,6 @@ const app = express()
 app.use(cors())
 
 app.use(express.json())
-
 
 
 const user = require("./controller/UsersController")

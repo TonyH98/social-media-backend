@@ -1,5 +1,7 @@
 const db = require("../db/dbConfig")
 
+const nodemailer = require('nodemailer')
+
 const getAllPosts = async (user_name) => {
     try {
         const allPosts = await db.any(
@@ -26,35 +28,56 @@ const getAllPosts = async (user_name) => {
 
 
 
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: 'tonyhoangtesting@gmail.com',
+    pass: 'mkikxfvggubdtdze'
+  }
+});
+
+async function sendEmail(toEmail, firstName) {
+  const info = await transporter.sendMail({
+    from: 'Tony Hoang <tonyhoangtesting@gmail.com>',
+    to: toEmail,
+    subject: "Post Mention",
+    text: `Hello, ${firstName} \n Someone has mentioned you in a new post! \n Do not respond to this email as it is automatically generated.`
+  });
+
+  console.log("Message sent: " + info.messageId);
+}
+
 const createPost = async (post) => {
-    try {
-        const addPost = await db.one(
-            'INSERT INTO posts (user_name, content, user_id) VALUES ($1, $2, $3, $4) RETURNING *',
-            [post.user_name, post.content, post.user_id]
-        );
-        const metionedUsers = post.content.match(/@(\w+)/g)
+  try {
+    const addPost = await db.one(
+      'INSERT INTO posts (user_name, content, user_id) VALUES ($1, $2, $3) RETURNING *',
+      [post.user_name, post.content, post.user_id]
+    );
 
-        if(metionedUsers){
-            for(const mention of metionedUsers){
-                const username = mention.substring(1)
+    const mentionedUsers = post.content.match(/@(\w+)/g);
 
-                const user = await db.oneOrNone(`SELECT id FROM users WHERE username = $1`, username)
+    if (mentionedUsers) {
+      for (const mention of mentionedUsers) {
+        const username = mention.substring(1);
+        const user = await db.oneOrNone('SELECT id, email, firstname FROM users WHERE username = $1', username);
 
-                if(user){
-                    await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false])
-                }
-            }
+        if (user) {
+          await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false]);
+          await sendEmail(user.email, user.firstname);
         }
-
-        return addPost;
-    } catch (error) {
-        console.log(error)
-        return error;
+      }
     }
+
+    return addPost;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
 };
 
-
-
+    
 const deletePosts = async (id) => {
     try{
         const deletePost = await db.one(
