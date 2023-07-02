@@ -34,7 +34,7 @@ CREATE TABLE hashtags(
     id SERIAL PRIMARY KEY,
     tag_names TEXT,
     CONSTRAINT unique_tag_name UNIQUE (tag_names)
-)
+);
 
 DROP TABLE IF EXISTS post_hashtags;
 CREATE TABLE post_hashtags (
