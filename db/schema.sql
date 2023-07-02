@@ -15,6 +15,7 @@ CREATE TABLE users(
     DOB DATE,
     bio TEXT,
     profile_name TEXT,
+    notifications BOOLEAN DEFAULT FALSE,
     password TEXT NOT NULL
 );
 

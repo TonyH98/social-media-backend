@@ -2,7 +2,7 @@ const express = require("express")
 
 const posts = require("./PostsController")
 
-const {getAllUsers, getUser, newUser, loginUser} = require("../queries/users")
+const {getAllUsers, getUser, newUser, loginUser, editUser} = require("../queries/users")
 
 
 const {checkPassword , checkEmail} = require("../middleware/userMiddleware")
@@ -65,6 +65,17 @@ users.post("/signup", checkPassword, checkEmail, async(req , res) => {
         }
     
     })
+
+
+
+    users.put("/:id", async(req , res) => {
+        const {id} = req.params
+
+        const editUsers = await editUser(id , req.body)
+
+        res.status(200).json(editUsers)
+    })
+
 
 
     module.exports = users

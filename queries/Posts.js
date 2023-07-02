@@ -4,6 +4,7 @@ const nodemailer = require('nodemailer')
 
 const password = process.env.Email_Password
 
+
 const getAllPosts = async (user_name) => {
     try {
         const allPosts = await db.any(
@@ -63,11 +64,13 @@ const createPost = async (post) => {
     if (mentionedUsers) {
       for (const mention of mentionedUsers) {
         const username = mention.substring(1);
-        const user = await db.oneOrNone('SELECT id, email, firstname FROM users WHERE username = $1', username);
+        const user = await db.oneOrNone('SELECT id, email, firstname, notifications FROM users WHERE username = $1', username);
 
         if (user) {
           await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false]);
+        if(user.notifications){
           await sendEmail(user.email, user.firstname);
+        }  
         }
       }
     }
