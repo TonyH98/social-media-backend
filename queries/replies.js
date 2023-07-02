@@ -28,6 +28,29 @@ const getReplies = async (postId) => {
 }
 
 
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'tonyhoangtesting@gmail.com',
+      pass: 'mkikxfvggubdtdze'
+    }
+  });
+  
+  async function sendEmail(toEmail, firstName) {
+    const info = await transporter.sendMail({
+      from: 'Tony Hoang <tonyhoangtesting@gmail.com>',
+      to: toEmail,
+      subject: "Post Mention",
+      text: `Hello, ${firstName} \n Someone has mentioned you in a new post! \n Do not respond to this email as it is automatically generated.`
+    });
+  
+    console.log("Message sent: " + info.messageId);
+  }
+
+
+
 const createReply = async (post) => {
     try {
         const addPost = await db.one(
@@ -44,6 +67,7 @@ const createReply = async (post) => {
 
                 if(user){
                     await db.none('INSERT INTO notifications (users_id, reply_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false])
+                    await sendEmail(user.email, user.firstname);
                 }
             }
         }
