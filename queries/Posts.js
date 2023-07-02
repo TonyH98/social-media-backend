@@ -81,7 +81,7 @@ const createPost = async (post) => {
       if(hashtags){
         for(const hash of hashtags){
           try{
-            await t.none('INSERT INTO hashtags (tag_name) VALUES ($1)', hash);
+            await t.none('INSERT INTO hashtags (tag_names) VALUES ($1)', hash);
           }
           catch(error){
             if(error.code !== '23505'){
