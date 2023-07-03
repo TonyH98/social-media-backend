@@ -36,10 +36,13 @@ CREATE TABLE hashtags(
     CONSTRAINT unique_tag_name UNIQUE (tag_names)
 );
 
+
+
 DROP TABLE IF EXISTS post_hashtags;
 CREATE TABLE post_hashtags (
     post_id INTEGER REFERENCES posts(id),
     hashtag_id INTEGER REFERENCES hashtags(id),
+    user_id INTEGER REFERENCES users(id),
     PRIMARY KEY (post_id, hashtag_id)
 );
 
@@ -50,6 +53,8 @@ CREATE TABLE post_reactions (
     post_id INTEGER REFERENCES posts(id),
     reaction_type VARCHAR(10) CHECK (reaction_type IN ('like', 'dislike'))
 );
+
+
 
 DROP TABLE IF EXISTS replies;
 CREATE TABLE replies(

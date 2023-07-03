@@ -66,26 +66,32 @@ const createPost = async (post) => {
         for (const mention of mentionedUsers) {
           const username = mention.substring(1);
           const user = await db.oneOrNone('SELECT id, email, firstname, notifications FROM users WHERE username = $1', username);
-      
+
           if (user) {
             await db.none('INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false]);
-          if(user.notifications){
-            await sendEmail(user.email, user.firstname);
-          }  
+
+            if (user.notifications) {
+              await sendEmail(user.email, user.firstname);
+            }
           }
         }
       }
 
       const hashtags = post.content.match(/#(\w+)/g);
 
-      if(hashtags){
-        for(const hash of hashtags){
-          try{
-            await t.none('INSERT INTO hashtags (tag_names) VALUES ($1)', hash);
-          }
-          catch(error){
-            if(error.code !== '23505'){
-              throw error
+      if (hashtags) {
+        for (const hash of hashtags) {
+          try {
+             insertedHashtag = await t.one(
+              'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+              hash
+            );
+
+            await t.none('INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)', 
+            [insertedPost.id, insertedHashtag.id, post.user_id]);
+          } catch (error) {
+            if (error.code !== '23505') {
+              throw error;
             }
           }
         }
@@ -100,6 +106,7 @@ const createPost = async (post) => {
     return error;
   }
 };
+
 
 
 const deletePosts = async (id) => {
