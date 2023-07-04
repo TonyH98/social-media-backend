@@ -19,6 +19,25 @@ CREATE TABLE users(
     password TEXT NOT NULL
 );
 
+
+DROP TABLE IF EXISTS interests;
+CREATE TABLE interests (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(30)
+);
+
+
+DROP TABLE IF EXISTS users_interests;
+
+CREATE TABLE users_interests(
+    users_id INTEGER,
+    interests_id INTEGER,
+    added BOOLEAN NOT NULL,
+    UNIQUE (users_id, interests_id)
+);
+
+
+
 DROP TABLE IF EXISTS posts;
 CREATE TABLE posts (
     id SERIAL PRIMARY KEY,

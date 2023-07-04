@@ -104,11 +104,82 @@ const editUser = async (id , user) => {
 }
 
 
+const getInterestsFromUsers = async (id) => {
+    try {
+      const getinterest= await db.any(
+        `SELECT users_interests.users_id, users_interests.added, 
+        users_interests.interests_id, interests.name 
+        FROM users_interests
+        JOIN interests ON interests.id =  users_interests.interests_id 
+        JOIN users ON users.id = users_interests.users_id 
+        WHERE users.id = $1`,
+        [id]
+      );
+      return getinterest;
+    } catch (error) {
+      return error;
+    }
+  };
+  
+  const getInterestFromUserByIndex = async (userId, interestId) => {
+    try {
+      const getInterest = await db.oneOrNone(
+        `SELECT users_interests.users_id, users_interests.added, 
+        users_interests.interests_id, interests.name 
+        FROM users_interests
+        JOIN interests ON interests.id =  users_interests.interests_id 
+        JOIN users ON users.id = users_interests.users_id 
+        WHERE users.id = $1 AND category_id = $2`,
+        [userId, interestId]
+      );
+  
+      if (!getInterest) {
+        throw new Error("Category not found");
+      }
+  
+      return getInterest;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+  
+  const addInterestToUser = async (userId, interestId) => {
+    try {
+      const add = await db.none(
+        `INSERT INTO users_interests (users_id, interests_id, added) VALUES($1 , $2, $3)`,
+        [userId, interestId, true]
+      );
+      return !add;
+    } catch (error) {
+      return error;
+    }
+  };
+  
+  const deleteInterestsFromUsers = async (userId, interestsId) => {
+    try {
+      const deletes = await db.one(
+        `DELETE FROM users_interests WHERE users_id = $1 AND interests_id =$2 RETURNING *`,
+        [userId, interestsId]
+      );
+      return deletes;
+    } catch (error) {
+      return error;
+    }
+  };
+
+
+
+
 
 module.exports={
     getAllUsers,
     getUser,
     newUser,
     loginUser,
-    editUser
+    editUser,
+    getInterestFromUserByIndex,
+    getInterestsFromUsers,
+    addInterestToUser,
+    deleteInterestsFromUsers
 }

@@ -26,6 +26,9 @@ const search = require("./controller/searchController")
 
 const tags =  require("./controller/hashTagsController")
 
+const interest = require("./controller/interestsController")
+
+
 app.use("/users", user)
 
 app.use("/notifications", note)
@@ -39,6 +42,8 @@ app.use("/plans", plans)
 app.use("/search", search)
 
 app.use("/tags", tags)
+
+app.use("/interests", interest)
 
 app.use("/", (req , res) => {
     res.send("Welcome to the social media app")
