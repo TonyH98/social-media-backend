@@ -55,31 +55,68 @@ const transporter = nodemailer.createTransport({
 
 
 const createReply = async (post) => {
+   
     try {
-        const addPost = await db.one(
-            'INSERT INTO replies (posts_id, content, user_id) VALUES ($1, $2, $3) RETURNING *',
-            [post.posts_id, post.content, 0, post.user_id]
-        );
-        const metionedUsers = post.content.match(/@(\w+)/g)
-
-        if(metionedUsers){
-            for(const mention of metionedUsers){
-                const username = mention.substring(1)
-
-                const user = await db.oneOrNone(`SELECT id FROM users WHERE username = $1`, username)
-
-                if(user){
-                    await db.none('INSERT INTO notifications (users_id, reply_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)', [user.id, addPost.id, false, addPost.user_id, false])
-                    await sendEmail(user.email, user.firstname);
+        const addPost = await db.tx(async (t) => {
+          const insertedPost = await t.one(
+            'INSERT INTO replies (posts_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
+            [post.posts_id , post.user_id, psts.content]
+          );
+    
+          const mentionedUsers = post.content.match(/@(\w+)/g);
+          if (mentionedUsers) {
+            for (const mention of mentionedUsers) {
+              const username = mention.substring(1);
+              const user = await db.oneOrNone(
+                'SELECT id, email, firstname, notifications FROM users WHERE username = $1',
+                username
+              );
+    
+              if (user) {
+                await db.none(
+                  'INSERT INTO notifications (users_id, reply_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)',
+                  [user.id, addPost.id, false, addPost.user_id, false]
+                );
+    
+                if (user.notifications) {
+                  await sendEmail(user.email, user.firstname);
                 }
+              }
             }
-        }
-
+          }
+    
+          const hashtags = post.content.match(/#(\w+)/g);
+          if (hashtags) {
+            for (const hash of hashtags) {
+              try {
+                const insertedHashtag = await t.one(
+                  'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+                  hash
+                );
+    
+                await t.none(
+                  'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                  [insertedPost.id, insertedHashtag.id, post.user_id]
+                );
+              } catch (error) {
+                if (error.code !== '23505') {
+                  throw error;
+                }
+              }
+            }
+          }
+    
+          return insertedPost;
+        });
+    
         return addPost;
-    } catch (error) {
-        console.log(error)
+      } catch (error) {
+        console.log(error);
         return error;
-    }
+      }
+
+
+
 };
 
 const deleteReply = async (id) => {

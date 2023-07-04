@@ -1,11 +1,11 @@
 const express = require("express")
 
-const  {searchPost} = require("../queries/searchPost")
+const  {searchPost , searchReply} = require("../queries/searchPost")
 
 const search = express.Router()
 
 
-search.get("/tag/:tagName", async (req, res) => {
+search.get("/post/:tagName", async (req, res) => {
   const { tagName } = req.params;
 
   console.log(tagName);
@@ -18,6 +18,19 @@ search.get("/tag/:tagName", async (req, res) => {
   }
 });
 
+
+search.get("/replies/:tagName", async (req, res) => {
+  const { tagName } = req.params;
+
+  console.log(tagName);
+  try {
+    const getPosts = await searchReply(`#${tagName}`);
+    res.json(getPosts);
+  } catch (error) {
+    console.log(error);
+    res.json(error);
+  }
+});
 
 
 module.exports = search

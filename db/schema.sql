@@ -38,13 +38,6 @@ CREATE TABLE hashtags(
 
 
 
-DROP TABLE IF EXISTS post_hashtags;
-CREATE TABLE post_hashtags (
-    post_id INTEGER REFERENCES posts(id),
-    hashtag_id INTEGER REFERENCES hashtags(id),
-    user_id INTEGER REFERENCES users(id),
-    PRIMARY KEY (post_id, hashtag_id)
-);
 
 
 DROP TABLE IF EXISTS post_reactions;
@@ -64,6 +57,16 @@ CREATE TABLE replies(
     content VARCHAR(500) NOT NULL,
     date_created DATE DEFAULT CURRENT_DATE
 );
+
+DROP TABLE IF EXISTS post_hashtags;
+CREATE TABLE post_hashtags (
+    post_id INTEGER REFERENCES posts(id),
+    reply_id INTEGER REFERENCES replies(id),
+    hashtag_id INTEGER REFERENCES hashtags(id),
+    user_id INTEGER REFERENCES users(id),
+    PRIMARY KEY (post_id, hashtag_id)
+);
+
 
 DROP TABLE IF EXISTS favorite_posts;
 CREATE TABLE favorite_posts(
