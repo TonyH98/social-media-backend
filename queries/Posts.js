@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer')
 const password = process.env.Email_Password
 
 
+
 const getAllPosts = async (user_name) => {
     try {
         const allPosts = await db.any(
