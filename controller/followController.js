@@ -1,6 +1,6 @@
 const express = require("express")
 
-const {getAllFollowing, addFollowingToUser, deletePersonFromUsers} = require("../queries/follower")
+const{getAllFollowing, addFollowingToUser, deletePersonFromUsers, getAllFollowers} = require("../queries/follower")
 
 const follow = express.Router()
 
@@ -43,6 +43,22 @@ follow.delete("/:userId/delete/:followId", async (req , res) => {
 
 
 })
+
+
+follow.get("/:userId/followers/:followId", async(req , res) => {
+
+  const {userId , followId} = req.params
+
+  try{
+      const allFollowers = await getAllFollowers(userId , followId)
+      res.json(allFollowers)
+  }
+  catch(error){
+      console.log(error)
+      return error
+  }
+})
+
 
 
 module.exports = follow

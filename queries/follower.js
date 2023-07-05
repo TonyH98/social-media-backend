@@ -2,7 +2,7 @@ const db = require("../db/dbConfig")
 
 
 
-const getAllFollowing = async (userId, followId) => {
+const getAllFollowing = async (userId) => {
     try{
         const getFollowers = await db.any(
             `SELECT uf.follow, uf.selected, uf.added, uf.user_id, uf.following_id,
@@ -11,7 +11,7 @@ const getAllFollowing = async (userId, followId) => {
             JOIN users u ON u.id = uf.user_id
             JOIN users f ON f.id = uf.following_id
             WHERE uf.user_id = $1`,
-            [userId , followId]
+            userId
         )
         return getFollowers
     }
@@ -45,4 +45,23 @@ const addFollowingToUser = async (userId, followId) => {
     }
   };
 
-  module.exports={getAllFollowing, addFollowingToUser, deletePersonFromUsers}
+const getAllFollowers = async (userId, followId) => {
+    try{
+      const getFollowers = await db.any(
+        `SELECT f.username, f.profile_img, f.bio 
+        FROM users_followers uf
+        JOIN users f ON f.id = uf.following_id
+        WHERE uf.user_id = $1 AND uf.following_id = $2`,
+        [userId, followId]
+    );
+    
+        return getFollowers
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+}
+
+
+  module.exports={getAllFollowing, addFollowingToUser, deletePersonFromUsers, getAllFollowers}
