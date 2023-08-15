@@ -9,7 +9,7 @@ const password = process.env.Email_Password
 const getAllPosts = async (user_name) => {
     try {
         const allPosts = await db.any(
-            `SELECT posts.id, posts.content, to_char(date_created, 'MM/DD/YYYY') AS time,
+            `SELECT posts.id, posts.content, posts.posts_img, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
             json_build_object(
                 'id', users.id,
                 'username', posts.user_name,
@@ -57,8 +57,8 @@ const createPost = async (post) => {
   try {
     const addPost = await db.tx(async (t) => {
       const insertedPost = await t.one(
-        'INSERT INTO posts (user_name, content, user_id) VALUES ($1, $2, $3) RETURNING *',
-        [post.user_name, post.content, post.user_id]
+        'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
+        [post.user_name, post.content, post.user_id, post.posts_img]
       );
 
       const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -103,7 +103,7 @@ const createPost = async (post) => {
           }
         }
       }
-
+  
       return insertedPost;
     });
 

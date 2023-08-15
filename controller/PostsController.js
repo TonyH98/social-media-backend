@@ -1,5 +1,10 @@
 const express = require("express")
 
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+
+
 const {getAllPosts, createPost, deletePosts, createReaction, getReaction} = require("../queries/Posts")
 
 
@@ -8,6 +13,29 @@ const posts = express.Router({mergeParams: true})
 const reply = require("./repliesController")
 
 posts.use("/:postId/reply", reply)
+
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './Images');
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + uuidv4();
+      const extension = path.extname(file.originalname);
+      cb(null, uniqueSuffix + extension);
+    }
+  });
+  
+  const upload = multer({
+    storage,
+    limits: {
+      fileSize: Infinity
+    },
+  });
+
+
+
 
 
 posts.get("/", async (req , res) => {
@@ -24,12 +52,13 @@ catch(error){
 
 })
 
-posts.post("/", async (req , res) => {
+posts.post("/", upload.single('posts_img'), async (req , res) => {
     try{
         const post = await createPost(req.body)
         res.json(post)
     }
     catch(error){
+        console.log(error)
         res.status(400).json({ error: error });
     }
 })

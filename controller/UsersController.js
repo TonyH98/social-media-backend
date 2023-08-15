@@ -1,5 +1,10 @@
 const express = require("express")
 
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+
+
 const posts = require("./PostsController")
 
 const {
@@ -18,7 +23,30 @@ const {
 const {checkPassword , checkEmail} = require("../middleware/userMiddleware")
 const users = express.Router()
 
+
 users.use("/:username/posts", posts)
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './Images');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + uuidv4();
+    const extension = path.extname(file.originalname);
+    cb(null, uniqueSuffix + extension);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: Infinity
+  },
+});
+
+
+
 
 users.get("/", async (req ,res) => {
     const allUsers = await getAllUsers();
@@ -78,7 +106,7 @@ users.post("/signup", checkPassword, checkEmail, async(req , res) => {
 
 
 
-    users.put("/:id", async(req , res) => {
+    users.put("/:id", upload.single('profile_img'), upload.single('banner_img'), async(req , res) => {
         const {id} = req.params
 
         const editUsers = await editUser(id , req.body)

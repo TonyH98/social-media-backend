@@ -4,7 +4,7 @@ require("dotenv").config()
 
 const stripeKey = process.env.STRIPE_SECRET_KEY
 
-console.log(stripeKey)
+
 
 const stripe = require("stripe")(stripeKey)
 
