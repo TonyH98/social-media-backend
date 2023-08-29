@@ -50,7 +50,7 @@ app.use("/tags", tags)
 
 app.use("/interests", interest)
 
-app.use("/", (req , res) => {
+app.get("/", (req , res) => {
     res.send("Welcome to the social media app")
 })
 
@@ -97,8 +97,8 @@ app.post('/create-checkout-session', async (req, res) => {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-    //   success_url: "https://digital-commerce-site.netlify.app/success",
-    //   cancel_url: "https://digital-commerce-site.netlify.app/"
+       success_url: "http://localhost:3000",
+       cancel_url:  "http://localhost:3000"
     });
   
     res.status(200).send(JSON.stringify({

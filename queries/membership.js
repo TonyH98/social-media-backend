@@ -13,7 +13,7 @@ const getAllMembershipsPlans = async () =>{
 
 const getMembershipPlan = async (id) => {
     try{
-        const getPlan = await db.one(`SELECT * FROM membership WHERE id=$1`)
+        const getPlan = await db.one(`SELECT * FROM memberships WHERE id=$1`, id)
         return getPlan
     }
     catch(error){

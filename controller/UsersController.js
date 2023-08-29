@@ -106,14 +106,17 @@ users.post("/signup", checkPassword, checkEmail, async(req , res) => {
 
 
 
-    users.put("/:id", upload.single('profile_img'), upload.single('banner_img'), async(req , res) => {
-        const {id} = req.params
-
-        const editUsers = await editUser(id , req.body)
-
-        res.status(200).json(editUsers)
-    })
-
+    users.put("/:id", upload.fields([
+      { name: 'profile_img', maxCount: 1 },
+      { name: 'banner_img', maxCount: 1 }
+  ]), async (req, res) => {
+      const { id } = req.params;
+      
+      const editUsers = await editUser(id, req.body);
+  
+      res.status(200).json(editUsers);
+  });
+  
 
 
 //Add Categories to User

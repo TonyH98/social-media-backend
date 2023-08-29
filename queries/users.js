@@ -99,6 +99,7 @@ const editUser = async (id , user) => {
         return editUser
     }
     catch(error){
+      console.log(error)
         return error
     }
 }
