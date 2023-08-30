@@ -45,7 +45,7 @@ CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
     user_name TEXT REFERENCES users(username),
     user_id INTEGER REFERENCES users(id),
-    content VARCHAR(500) NOT NULL,
+    content TEXT NOT NULL,
     posts_img TEXT,
     date_created DATE DEFAULT CURRENT_DATE
 );

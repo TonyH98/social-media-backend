@@ -4,6 +4,8 @@ const nodemailer = require('nodemailer')
 
 const password = process.env.Email_Password
 
+const cheerio = require('cheerio')
+const axios = require('axios')
 
 
 const getAllPosts = async (user_name) => {
@@ -56,55 +58,110 @@ async function sendEmail(toEmail, firstName) {
 const createPost = async (post) => {
   try {
     const addPost = await db.tx(async (t) => {
-      const insertedPost = await t.one(
-        'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
-        [post.user_name, post.content, post.user_id, post.posts_img]
-      );
 
-      const mentionedUsers = post.content.match(/@(\w+)/g);
-      if (mentionedUsers) {
-        for (const mention of mentionedUsers) {
-          const username = mention.substring(1);
-          const user = await db.oneOrNone(
-            'SELECT id, email, firstname, notifications FROM users WHERE username = $1',
-            username
-          );
+      const articleUrlMatch = post.content.match(/\bhttps?:\/\/\S+/gi);
 
-          if (user) {
-            await db.none(
-              'INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)',
-              [user.id, addPost.id, false, addPost.user_id, false]
-            );
+      if(articleUrlMatch){
+        const articleUrl = articleUrlMatch[0];
+        const articleResponse = await axios.get(articleUrl);
+        const articleHtml = articleResponse.data;
+        const $ = cheerio.load(articleHtml);
+        const articleTitle = $('meta[property="og:title"]').attr('content');
+        const articleImage = $('meta[property="og:image"]').attr('content');
 
-            if (user.notifications) {
-              await sendEmail(user.email, user.firstname);
-            }
-          }
-        }
-      }
+        // Create the embedded image HTML with a clickable link
+        const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" /></a>`;
 
-      const hashtags = post.content.match(/#(\w+)/g);
-      if (hashtags) {
-        for (const hash of hashtags) {
-          try {
-            const insertedHashtag = await t.one(
-              'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
-              hash
-            );
+        // Remove the article URL from post.content
+        const postContentWithoutUrl = post.content.replace(articleUrl, '');
 
-            await t.none(
-              'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
-              [insertedPost.id, insertedHashtag.id, post.user_id]
-            );
-          } catch (error) {
-            if (error.code !== '23505') {
-              throw error;
-            }
-          }
-        }
-      }
+        // Modify the post content to include the embedded image and title
+        const postContent = `${postContentWithoutUrl}\n ${embeddedImage} ${articleTitle}`;
+
+        const insertedPost = await t.one(
+          'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
+          [post.user_name, postContent, post.user_id, post.posts_img]
+        );
+        const hashtags = post.content.match(/#(\w+)/g);
+        if (hashtags) {
+          for (const hash of hashtags) {
+            try {
+              const insertedHashtag = await t.one(
+                'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+                hash
+              );
   
-      return insertedPost;
+              await t.none(
+                'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                [insertedPost.id, insertedHashtag.id, post.user_id]
+              );
+            } catch (error) {
+              if (error.code !== '23505') {
+                throw error;
+              }
+            }
+          }
+          return insertedPost;
+        }
+
+      }
+
+
+  
+      else{
+        const insertedPost = await t.one(
+          'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
+          [post.user_name, post.content, post.user_id, post.posts_img]
+        );
+  
+        const mentionedUsers = post.content.match(/@(\w+)/g);
+        if (mentionedUsers) {
+          for (const mention of mentionedUsers) {
+            const username = mention.substring(1);
+            const user = await db.oneOrNone(
+              'SELECT id, email, firstname, notifications FROM users WHERE username = $1',
+              username
+            );
+  
+            if (user) {
+              await db.none(
+                'INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)',
+                [user.id, addPost.id, false, addPost.user_id, false]
+              );
+  
+              if (user.notifications) {
+                await sendEmail(user.email, user.firstname);
+              }
+            }
+          }
+        }
+  
+        const hashtags = post.content.match(/#(\w+)/g);
+        if (hashtags) {
+          for (const hash of hashtags) {
+            try {
+              const insertedHashtag = await t.one(
+                'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+                hash
+              );
+  
+              await t.none(
+                'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                [insertedPost.id, insertedHashtag.id, post.user_id]
+              );
+            } catch (error) {
+              if (error.code !== '23505') {
+                throw error;
+              }
+            }
+          }
+        }
+  
+      
+    
+        return insertedPost;
+
+      }
     });
 
     return addPost;
