@@ -6,7 +6,7 @@ const password = process.env.Email_Password
 const getReplies = async (postId) => {
     try{
         const allReplies = await db.any(
-            `SELECT r.id, r.posts_id, r.content, to_char(date_created, 'MM/DD/YYYY') AS time,
+            `SELECT r.id, r.posts_id, r.content, to_char(r.date_created, 'MM/DD/YYYY') AS time,
             json_build_object(
                 'id', r.user_id,
                 'username', users.username,
@@ -14,11 +14,12 @@ const getReplies = async (postId) => {
                 'lastname', users.lastname,
                 'profile_name', users.profile_name,
                 'profile_img', users.profile_img
-            ) As creator
-            FROM replies r 
-            JOIN users ON users.id = r.user_id
-            WHERE replies.posts_id = $1
-            GROUP BY r.posts_id
+            ) AS creator
+        FROM replies r 
+        JOIN users ON users.id = r.user_id
+        WHERE r.posts_id = $1
+        GROUP BY r.id, r.posts_id, users.username, users.firstname, users.lastname, users.profile_name, users.profile_img;
+        
             `, postId
 
         );
@@ -60,7 +61,7 @@ const createReply = async (post) => {
         const addPost = await db.tx(async (t) => {
           const insertedPost = await t.one(
             'INSERT INTO replies (posts_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
-            [post.posts_id , post.user_id, psts.content]
+            [post.posts_id , post.user_id, post.content]
           );
     
           const mentionedUsers = post.content.match(/@(\w+)/g);
