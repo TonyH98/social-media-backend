@@ -66,8 +66,11 @@ const createPost = async (post) => {
         const articleResponse = await axios.get(articleUrl);
         const articleHtml = articleResponse.data;
         const $ = cheerio.load(articleHtml);
+
+        // Extract company logo and name using Open Graph meta tags
         const articleTitle = $('meta[property="og:title"]').attr('content');
         const articleImage = $('meta[property="og:image"]').attr('content');
+        const companyName = $('meta[property="og:site_name"]').attr('content');
 
         // Create the embedded image HTML with a clickable link
         const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" /></a>`;
@@ -75,8 +78,8 @@ const createPost = async (post) => {
         // Remove the article URL from post.content
         const postContentWithoutUrl = post.content.replace(articleUrl, '');
 
-        // Modify the post content to include the embedded image and title
-        const postContent = `${postContentWithoutUrl}\n ${embeddedImage} ${articleTitle}`;
+        // Modify the post content to include the embedded image, title, and company info
+        const postContent = `${postContentWithoutUrl}\n ${embeddedImage} ${articleTitle}\n\nCompany: ${companyName}`;
 
         const insertedPost = await t.one(
           'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
