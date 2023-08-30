@@ -32,7 +32,29 @@ const getAllPosts = async (user_name) => {
     }
 };
 
-
+const getPost = async (user_name, id) => {
+  try {
+      const allPosts = await db.one(
+          `SELECT posts.id, posts.content, posts.posts_img, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          json_build_object(
+              'id', users.id,
+              'username', posts.user_name,
+              'firstname', users.firstname,
+              'lastname', users.lastname,
+              'profile_name', users.profile_name,
+              'profile_img', users.profile_img
+          ) AS creator, posts.user_id
+          FROM posts
+          JOIN users ON posts.user_name = users.username
+          WHERE posts.user_name = $1 AND posts.id = $2`,
+          [user_name, id]
+      );
+      return allPosts;
+  } catch (error) {
+      console.log(error);
+      return error;
+  }
+};
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -244,4 +266,4 @@ const createReaction = async (react , userId, postId) => {
   };
 
 
-module.exports = {getAllPosts, createPost, deletePosts, createReaction, getReaction}
+module.exports = {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction}
