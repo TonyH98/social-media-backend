@@ -1,3 +1,4 @@
+
 const db = require("../db/dbConfig")
 
 
@@ -9,7 +10,6 @@ const getAllFavorites = async (userId) => {
                 'creator_id', fp.creator_id,
                 'content', p.content,
                 'p.date_created', p.date_created,
-                'views', p.views,
                 'profile_img', u.profile_img,
                 'username', u.username,
                 'profile_name', u.profile_name
@@ -19,7 +19,7 @@ const getAllFavorites = async (userId) => {
             JOIN posts p ON p.id = fp.posts_id
             JOIN users f ON f.id = fp.users_id
             WHERE fp.users_id = $1`,
-            [userId]
+            userId
         );
         return favoritesByUser;
     } catch (error) {
@@ -36,6 +36,7 @@ try{
         `INSERT INTO favorite_posts (users_id, posts_id, creator_id, favorites, selected) VALUES ($1, $2, $3, $4, $5)`,
         [userId, postId, fav.creator_id, true, false]
     )
+    console.log(addFav)
     return addFav
 }
 catch(error){
@@ -47,8 +48,11 @@ catch(error){
 
 const deleteFavorite = async (userId , postId) => {
     try{
-        `DELETE * FROM favorite_posts WHERE favorite_posts.user_id = $1 AND favorite_posts.posts_id = $2`,
-        [userId , postId]
+       const deleteFav = await db.one(
+    `DELETE FROM favorite_posts WHERE favorite_posts.users_id = $1 AND favorite_posts.posts_id = $2`,
+    [userId , postId]
+       )
+       return deleteFav
     }
     catch(error){
         console.log(error)

@@ -89,18 +89,18 @@ const createPost = async (post) => {
         const articleHtml = articleResponse.data;
         const $ = cheerio.load(articleHtml);
 
-        // Extract company logo and name using Open Graph meta tags
+  
         const articleTitle = $('meta[property="og:title"]').attr('content');
         const articleImage = $('meta[property="og:image"]').attr('content');
         const companyName = $('meta[property="og:site_name"]').attr('content');
 
-        // Create the embedded image HTML with a clickable link
-        const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" width="500" height="400" /></a>`;
 
-        // Remove the article URL from post.content
+        const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" width="400" height="300" /></a>`;
+
+
         const postContentWithoutUrl = post.content.replace(articleUrl, '');
         
-        // Modify the post content to include the embedded image, title, and company info
+     
         const postContent = `${postContentWithoutUrl}\n${embeddedImage}\n
         ${articleTitle}\n\nCompany: ${companyName}`;
         
