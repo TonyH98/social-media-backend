@@ -45,12 +45,12 @@ follow.delete("/:userId/delete/:followId", async (req , res) => {
 })
 
 
-follow.get("/:userId/followers/:followId", async(req , res) => {
+follow.get("/:userId/followers", async(req , res) => {
 
-  const {userId , followId} = req.params
+  const {userId } = req.params
 
   try{
-      const allFollowers = await getAllFollowers(userId , followId)
+      const allFollowers = await getAllFollowers(userId)
       res.json(allFollowers)
   }
   catch(error){

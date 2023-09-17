@@ -19,7 +19,25 @@ const getAllFollowing = async (userId) => {
         console.log(error)
         return error
     }
-}
+  }
+  const getAllFollowers = async (userId) => {
+      try{
+        const getFollowers = await db.any(
+          `SELECT u.username, u.profile_img, u.bio 
+          FROM users_followers uf
+          JOIN users f ON f.id = uf.following_id
+          JOIN users u ON u.id = uf.user_id
+          WHERE uf.following_id = $1`,
+          userId
+      );
+      
+          return getFollowers
+      }
+      catch(error){
+          console.log(error)
+          return error
+      }
+  }
 
 const addFollowingToUser = async (userId, followId) => {
     try {
@@ -45,23 +63,6 @@ const addFollowingToUser = async (userId, followId) => {
     }
   };
 
-const getAllFollowers = async (userId, followId) => {
-    try{
-      const getFollowers = await db.any(
-        `SELECT f.username, f.profile_img, f.bio 
-        FROM users_followers uf
-        JOIN users f ON f.id = uf.following_id
-        WHERE uf.user_id = $1 AND uf.following_id = $2`,
-        [userId, followId]
-    );
-    
-        return getFollowers
-    }
-    catch(error){
-        console.log(error)
-        return error
-    }
-}
 
 
   module.exports={getAllFollowing, addFollowingToUser, deletePersonFromUsers, getAllFollowers}
