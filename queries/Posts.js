@@ -78,8 +78,9 @@ async function sendEmail(toEmail, firstName) {
 }
 
 const createPost = async (post) => {
+  let addPost = null
   try {
-    const addPost = await db.tx(async (t) => {
+   addPost = await db.tx(async (t) => {
 
       const articleUrlMatch = post.content.match(/\bhttps?:\/\/\S+/gi);
 
@@ -109,6 +110,8 @@ const createPost = async (post) => {
           'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
           [post.user_name, postContent, post.user_id, post.posts_img]
         );
+
+        
         const hashtags = post.content.match(/#(\w+)/g);
         if (hashtags) {
           for (const hash of hashtags) {
@@ -153,12 +156,10 @@ const createPost = async (post) => {
             if (user) {
               await db.none(
                 'INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)',
-                [user.id, addPost.id, false, addPost.user_id, false]
+                [user.id, post.id, false, insertedPost.user_id, false]
               );
-  
-              if (user.notifications) {
+             
                 await sendEmail(user.email, user.firstname);
-              }
             }
           }
         }
