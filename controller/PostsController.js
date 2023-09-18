@@ -92,30 +92,29 @@ posts.delete("/:id", async (req , res) => {
     }
 })
 
-
 posts.post("/:userId/react/:postId", async (req , res) => {
     try{
+        const { userId, postId } = req.params;
+        const reaction = req.body.reaction; 
 
-        const {userId , postId} = req.params
+        const createReactions = await createReaction(reaction, userId, postId);
 
-        const createReactions = await createReaction(req.body, userId, postId)
-
-        res.json(createReactions)
-
+        res.json(createReactions);
     }
     catch(error){
-        console.log(error)
-        return error
+        console.log(error);
+        res.status(500).json({ error: "An error occurred." });
     }
-})
+});
 
 
-posts.get("/reaction/:id" , async (req , res) => {
 
-    const {username, id} = req.params
+posts.get("/:id/reactions" , async (req , res) => {
+
+    const {id} = req.params
 
     try{
-        const allReaction = await getReaction(username, id)
+        const allReaction = await getReaction(id)
         res.json(allReaction)
     }
     catch(error){

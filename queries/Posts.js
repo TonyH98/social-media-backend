@@ -213,51 +213,45 @@ const deletePosts = async (id) => {
     }
 }
 
-const createReaction = async (react , userId, postId) => {
-    try {
-      const existing = await db.oneOrNone(
-        `SELECT reaction_type FROM post_reactions
-        WHERE user_id =$1 and post_id = $2`,
-        [react, userId , postId]
-      )
+const createReaction = async (react, userId, postId) => {
+  try {
+    const existing = await db.oneOrNone(
+      `SELECT reaction_type FROM post_reactions
+      WHERE user_id = $1 AND post_id = $2`,
+      [userId, postId]
+    );
 
-      if(existing){
-        if(existing.reaction_type === react.reaction_type){
-            await db.none(
-                `DELETE FROM post_reactions WHERE user_id =$1 AND post_id =$2`,
-                [userId , postId]
-            )
-        }
-        else{
-            await db.none(
-                `UPDATE post_reactions SET reaction_type = $1 WHERE user_id = $2 AND post_id = $3`,
-                [react, userId , postId]
-            )
-        }
-      }
-      else{
-        await db.none(
-            `INSERT INTO post_reactions (user_id, post_id, reaction_type)
-             VALUES ($1, $2, $3)`,
-            [react, userId , postId]
-          );
-      }
-      return true
-    } catch (error) {
-      console.log(error);
-      return error;
+    if (existing) {
+      // Delete the reaction
+      await db.none(
+        `DELETE FROM post_reactions WHERE user_id = $1 AND post_id = $2`,
+        [userId, postId]
+      );
+    } else {
+      // Insert a new reaction
+      await db.none(
+        `INSERT INTO post_reactions (user_id, post_id, reaction_type)
+         VALUES ($1, $2, $3)`,
+        [userId, postId, react]
+      );
     }
-  };
+    return true;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
   
   const getReaction = async (id) => {
     try {
-      const getReactions = db.one(
+      const getReactions = await db.one(
         `SELECT
-        COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
-        COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
-        FROM post_reactions
-         WHERE post_id = $1 ;`,
-        id
+          COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
+          COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
+          FROM post_reactions
+          WHERE post_id = $1;`,
+        [id] 
       );
       return getReactions;
     } catch (error) {
@@ -265,6 +259,7 @@ const createReaction = async (react , userId, postId) => {
       return error;
     }
   };
+  
 
 
 module.exports = {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction}
