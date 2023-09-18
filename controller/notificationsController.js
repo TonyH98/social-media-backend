@@ -9,9 +9,10 @@ const note = express.Router()
 note.get("/:id/posts", async(req , res) => {
 
     const {id} = req.params
-
+    console.log(id)
     try{
         const allNote = await getAllPostNotifications(id)
+        console.log(allNote)
         res.json(allNote)
     }
     catch(error){

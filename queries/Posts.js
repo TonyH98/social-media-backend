@@ -154,9 +154,9 @@ const createPost = async (post) => {
             );
   
             if (user) {
-              await db.none(
-                'INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)',
-                [user.id, post.id, false, insertedPost.user_id, false]
+              await t.one(
+                'INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                [user.id, insertedPost.id, false, post.user_id, false]
               );
              
                 await sendEmail(user.email, user.firstname);

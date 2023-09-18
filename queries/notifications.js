@@ -1,6 +1,7 @@
+
 const db = require("../db/dbConfig")
 
-const nodemailer = require('nodemailer')
+
 
 
 
@@ -22,6 +23,7 @@ const getAllPostNotifications = async (user_id) => {
       WHERE notifications.users_id = $1`,
       user_id
     );
+    console.log(allNote)
     return allNote;
   } catch (error) {
     console.log(error);
