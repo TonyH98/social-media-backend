@@ -9,7 +9,8 @@ const getAllFavorites = async (userId) => {
             json_build_object(
                 'creator_id', fp.creator_id,
                 'content', p.content,
-                'p.date_created', p.date_created,
+                'image', p.posts_img,
+                'date_created', to_char(p.date_created, 'MM/DD/YYYY'),
                 'profile_img', u.profile_img,
                 'username', u.username,
                 'profile_name', u.profile_name
