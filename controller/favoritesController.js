@@ -1,6 +1,6 @@
 const express = require("express")
 
-const {getAllFavorites , deleteFavorite, addFavorites} = require("../queries/favorites")
+const {getAllFavorites , getFavorites,  deleteFavorite, addFavorites} = require("../queries/favorites")
 
 
 const fav = express.Router()
@@ -20,6 +20,24 @@ catch(error){
 
 
 })
+
+
+fav.get("/:userId/post/:postId", async (req , res) =>{
+    
+    const {userId , postId} = req.params
+    
+    try{
+        const allFav = await getFavorites(userId , postId)
+        res.json(allFav)
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+    
+    
+    })
+
 
 
 fav.post("/:userId/fav/:postId", async (req , res) => {

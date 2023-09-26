@@ -6,7 +6,7 @@ const getAllFollowing = async (userId) => {
     try{
         const getFollowers = await db.any(
             `SELECT uf.follow, uf.selected, uf.added, uf.user_id, uf.following_id,
-            f.username, f.profile_img, f.bio 
+            f.username, f.profile_img, f.bio, f.profile_name
             FROM users_followers uf
             JOIN users u ON u.id = uf.user_id
             JOIN users f ON f.id = uf.following_id

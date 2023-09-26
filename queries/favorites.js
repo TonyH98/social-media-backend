@@ -29,6 +29,33 @@ const getAllFavorites = async (userId) => {
     }
 };
 
+const getFavorites = async (userId, postId) => {
+    try {
+        const favoritesByUser = await db.one(
+            `SELECT fp.favorites, fp.selected, fp.posts_id, fp.users_id,
+            json_build_object(
+                'creator_id', fp.creator_id,
+                'content', p.content,
+                'image', p.posts_img,
+                'date_created', to_char(p.date_created, 'MM/DD/YYYY'),
+                'profile_img', u.profile_img,
+                'username', u.username,
+                'profile_name', u.profile_name
+            ) AS post_creator
+            FROM favorite_posts fp
+            JOIN users u ON u.id = fp.creator_id
+            JOIN posts p ON p.id = fp.posts_id
+            JOIN users f ON f.id = fp.users_id
+            WHERE fp.users_id = $1 AND fp.posts_id = $2`,
+            [userId , postId]
+        );
+        return favoritesByUser;
+    } catch (error) {
+        console.log(error);
+        return []
+    }
+};
+
 
 const addFavorites = async (userId, postId, fav) => {
 
@@ -62,4 +89,4 @@ const deleteFavorite = async (userId , postId) => {
 }
 
 
-module.exports={getAllFavorites , deleteFavorite, addFavorites}
+module.exports={getAllFavorites , getFavorites, deleteFavorite, addFavorites}

@@ -242,23 +242,37 @@ const createReaction = async (react, userId, postId) => {
   }
 };
 
-  
-  const getReaction = async (id) => {
-    try {
-      const getReactions = await db.one(
-        `SELECT
-          COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
-          COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
-          FROM post_reactions
-          WHERE post_id = $1;`,
-        [id] 
-      );
-      return getReactions;
-    } catch (error) {
-      console.log(error);
-      return error;
-    }
-  };
+
+//Get all the reactions for all the users posts 
+
+
+
+//Get the post details reactions  
+const getReaction = async (id) => {
+  try {
+    const reaction = await db.one(
+      `SELECT
+        COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
+        COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
+        FROM post_reactions
+        WHERE post_id = $1;`,
+      [id]
+    );
+
+    // Create a result object that includes the likes, dislikes, and post_id
+    const result = {
+      likes: reaction.likes,
+      dislikes: reaction.dislikes,
+      post_id: id,
+    };
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
   
 
 

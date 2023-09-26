@@ -65,7 +65,6 @@ users.get("/", async (req ,res) => {
         return isValid
     })
     res.send(filterUser)
-
 })
 
 users.get("/:id", async (req , res) => {
