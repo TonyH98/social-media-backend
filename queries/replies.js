@@ -56,59 +56,109 @@ const transporter = nodemailer.createTransport({
 
 
 const createReply = async (post) => {
-   
+   let addPost = null
     try {
-        const addPost = await db.tx(async (t) => {
-          const insertedPost = await t.one(
-            'INSERT INTO replies (posts_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
-            [post.posts_id , post.user_id, post.content]
-          );
+        addPost = await db.tx(async (t) => {
+
+          const articleUrlMatch = post.content.match(/\bhttps?:\/\/\S+/gi);
+
+          if(articleUrlMatch){
+            const articleUrl = articleUrlMatch[0];
+            const articleResponse = await axios.get(articleUrl);
+            const articleHtml = articleResponse.data;
+            const $ = cheerio.load(articleHtml);
     
-          const mentionedUsers = post.content.match(/@(\w+)/g);
-          if (mentionedUsers) {
-            for (const mention of mentionedUsers) {
-              const username = mention.substring(1);
-              const user = await db.oneOrNone(
-                'SELECT id, email, firstname, notifications FROM users WHERE username = $1',
-                username
-              );
+      
+            const articleTitle = $('meta[property="og:title"]').attr('content');
+            const articleImage = $('meta[property="og:image"]').attr('content');
+            const companyName = $('meta[property="og:site_name"]').attr('content');
     
-              if (user) {
-                await db.none(
-                  'INSERT INTO notifications (users_id, reply_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5)',
-                  [user.id, addPost.id, false, addPost.user_id, false]
+    
+            const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" width="400" height="300" /></a>`;
+    
+    
+            const postContentWithoutUrl = post.content.replace(articleUrl, '');
+            
+         
+            const postContent = `${postContentWithoutUrl}\n${embeddedImage}\n
+            ${articleTitle}\n\nCompany: ${companyName}`;
+
+            const insertedPost = await t.one(
+              'INSERT INTO replies (posts_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
+              [post.posts_id , post.user_id, postContent]
+            );
+            const hashtags = post.content.match(/#(\w+)/g);
+            if(hashtags){
+              for (const hash of hashtags) {
+                try {
+                  const insertedHashtag = await t.one(
+                    'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+                    hash
+                  );
+      
+                  await t.none(
+                    'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                    [insertedPost.id, insertedHashtag.id, post.user_id]
+                  );
+                } catch (error) {
+                  if (error.code !== '23505') {
+                    throw error;
+                  }
+                }
+              }
+              return insertedPost
+            }
+          }
+          
+           else{
+            const insertedPost = await t.one(
+              'INSERT INTO replies (posts_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
+              [post.posts_id , post.user_id, post.content]
+            );
+
+            const mentionedUsers = post.content.match(/@(\w+)/g);
+            if (mentionedUsers) {
+              for (const mention of mentionedUsers) {
+                const username = mention.substring(1);
+                const user = await db.oneOrNone(
+                  'SELECT id, email, firstname, notifications FROM users WHERE username = $1',
+                  username
                 );
-    
-                if (user.notifications) {
-                  await sendEmail(user.email, user.firstname);
+      
+                if (user) {
+                  await t.one(
+                    'INSERT INTO notifications (users_id, reply_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                    [user.id, insertedPost.id, false, post.user_id, false]
+                  );
+                  
+                    await sendEmail(user.email, user.firstname);
+                  
                 }
               }
             }
-          }
-    
-          const hashtags = post.content.match(/#(\w+)/g);
-          if (hashtags) {
-            for (const hash of hashtags) {
-              try {
-                const insertedHashtag = await t.one(
-                  'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
-                  hash
-                );
-    
-                await t.none(
-                  'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
-                  [insertedPost.id, insertedHashtag.id, post.user_id]
-                );
-              } catch (error) {
-                if (error.code !== '23505') {
-                  throw error;
+            const hashtags = post.content.match(/#(\w+)/g);
+            if(hashtags){
+              for (const hash of hashtags) {
+                try {
+                  const insertedHashtag = await t.one(
+                    'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+                    hash
+                  );
+      
+                  await t.none(
+                    'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                    [insertedPost.id, insertedHashtag.id, post.user_id]
+                  );
+                } catch (error) {
+                  if (error.code !== '23505') {
+                    throw error;
+                  }
                 }
               }
+              return insertedPost
             }
           }
-    
-          return insertedPost;
-        });
+              });
     
         return addPost;
       } catch (error) {

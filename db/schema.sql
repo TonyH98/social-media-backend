@@ -87,7 +87,7 @@ CREATE TABLE post_hashtags (
     reply_id INTEGER REFERENCES replies(id),
     hashtag_id INTEGER REFERENCES hashtags(id),
     user_id INTEGER REFERENCES users(id),
-    PRIMARY KEY (post_id, hashtag_id)
+    PRIMARY KEY (hashtag_id)
 );
 
 

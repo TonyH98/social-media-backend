@@ -37,18 +37,19 @@ const getAllReplyNotifications = async (user_id) => {
     try{
         const allNote = await db.any(
             `SELECT notifications.id, notifications.sender_id, notifications.users_id,
-             notifications.reply_id, notifications.is_read, notifications.selected,
+            notifications.reply_id, notifications.is_read, notifications.selected,
             json_build_object(
-                'content' , replies.content,
-                'date_created', replies.date_created,
+                'content', replies.content,
+                'date_created', to_char(replies.date_created, 'MM/DD/YYYY'),
                 'username', users.username,
                 'profile_img', users.profile_img,
                 'profile_name', users.profile_name
             ) AS post_content 
             FROM notifications
-            JOIN posts ON posts.id = notifications.posts_id
+            JOIN replies ON replies.id = notifications.reply_id 
             JOIN users ON users.id = notifications.sender_id
-            WHERE notifications.users_id = $1`, user_id
+            WHERE notifications.users_id = $1`, 
+            user_id
         );
         return allNote
     }
