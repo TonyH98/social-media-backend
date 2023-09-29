@@ -116,12 +116,12 @@ const createPost = async (post) => {
         if (hashtags) {
           for (const hash of hashtags) {
             try {
-              const insertedHashtag = await t.one(
+              const insertedHashtag = await db.one(
                 'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
                 hash
               );
   
-              await t.none(
+              await db.none(
                 'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
                 [insertedPost.id, insertedHashtag.id, post.user_id]
               );
@@ -166,18 +166,31 @@ const createPost = async (post) => {
   
         const hashtags = post.content.match(/#(\w+)/g);
         if (hashtags) {
-          for (const hash of hashtags) {
-            try {
-              const insertedHashtag = await t.one(
-                'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+          for(const hash of hashtags){
+            try{
+              const existingHashtag = await db.oneOrNone(
+                `SELECT id FROM hashtags WHERE tag_names = $1`,
                 hash
-              );
-  
-              await t.none(
-                'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
-                [insertedPost.id, insertedHashtag.id, post.user_id]
-              );
-            } catch (error) {
+              )
+
+              if(!existingHashtag){
+                const insertedHashtag = await db.one(
+                  `INSERT INTO hashtags (tag_names) VALUES ($1) RETURNING *`,
+                  hash
+                )
+                await t.none(
+                  'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                  [insertedPost.id, insertedHashtag.id, post.user_id]
+                )
+              }
+              else{
+                await t.none(
+                  'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                  [insertedPost.id, existingHashtag.id, post.user_id]
+                );
+              }
+            }
+            catch(error){
               if (error.code !== '23505') {
                 throw error;
               }

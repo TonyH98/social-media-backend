@@ -83,12 +83,12 @@ CREATE TABLE replies(
 
 DROP TABLE IF EXISTS post_hashtags;
 CREATE TABLE post_hashtags (
+    user_id INTEGER REFERENCES users(id),
     post_id INTEGER REFERENCES posts(id),
     reply_id INTEGER REFERENCES replies(id),
-    hashtag_id INTEGER REFERENCES hashtags(id),
-    user_id INTEGER REFERENCES users(id),
-    PRIMARY KEY (hashtag_id)
+    hashtag_id INTEGER REFERENCES hashtags(id)
 );
+
 
 
 DROP TABLE IF EXISTS favorite_posts;
