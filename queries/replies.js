@@ -150,14 +150,16 @@ const createReply = async (post) => {
                         `INSERT INTO hashtags (tag_names) VALUES ($1) RETURNING *`,
                         hash
                       )
-                      await t.one(
+                      await t.none(
                         'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
                         [insertedPost.id, insertedHashtag.id, post.user_id]
                       )
                     }
                     else{
-                      'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
-                        [insertedPost.id, insertedHashtag.id, post.user_id]
+                      await t.none(
+                        'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                          [insertedPost.id, existingHashtag.id, post.user_id]
+                      )
                     }
                   }
                   catch(error){
