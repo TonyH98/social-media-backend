@@ -6,7 +6,8 @@ const searchPost = async (tagName) => {
       SELECT ph.*, h.tag_names,
       json_build_object(
         'content', p.content,
-        'date_created', p.date_created
+        'image', p.posts_img,
+        'date_created', to_char(p.date_created, 'MM/DD/YYYY')
       ) as posts_details,
       json_build_object(
         'username', p.user_name,
