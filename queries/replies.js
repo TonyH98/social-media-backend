@@ -137,26 +137,36 @@ const createReply = async (post) => {
               }
             }
             const hashtags = post.content.match(/#(\w+)/g);
-            if(hashtags){
-              for (const hash of hashtags) {
-                try {
-                  const insertedHashtag = await t.one(
-                    'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
-                    hash
-                  );
-      
-                  await t.none(
-                    'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
-                    [insertedPost.id, insertedHashtag.id, post.user_id]
-                  );
-                } catch (error) {
-                  if (error.code !== '23505') {
-                    throw error;
+
+              if(hashtags){
+                for(const hash of hashtags){
+                  try{
+                    const existingHashtag = await db.oneOrNone(
+                      `SELECT id FROM hashtags WHERE tag_names = $1`,
+                       hash
+                    )
+                    if(!existingHashtag){
+                      const insertedHashtag = await db.one(
+                        `INSERT INTO hashtags (tag_names) VALUES ($1) RETURNING *`,
+                        hash
+                      )
+                      await t.one(
+                        'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                        [insertedPost.id, insertedHashtag.id, post.user_id]
+                      )
+                    }
+                    else{
+                      'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                        [insertedPost.id, insertedHashtag.id, post.user_id]
+                    }
+                  }
+                  catch(error){
+                    if (error.code !== '23505') {
+                      throw error;
+                    }
                   }
                 }
               }
-              return insertedPost
-            }
           }
               });
     
