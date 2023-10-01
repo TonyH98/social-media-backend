@@ -37,7 +37,7 @@ const searchReply = async (tagName) => {
       json_build_object(
         'content', r.content,
         'date_created', to_char(r.date_created, 'MM/DD/YYYY')
-      ) as reply_details,
+      ) as posts_details,
       json_build_object(
         'username', u.username,
         'profile_name', u.profile_name,
