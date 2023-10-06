@@ -6,7 +6,7 @@ const password = process.env.Email_Password
 const getReplies = async (postId) => {
     try{
         const allReplies = await db.any(
-            `SELECT r.id, r.posts_id, r.content, to_char(r.date_created, 'MM/DD/YYYY') AS time,
+            `SELECT r.id, r.posts_id, r.content, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_img,
             json_build_object(
                 'id', r.user_id,
                 'username', users.username,
@@ -84,8 +84,8 @@ const createReply = async (post) => {
             ${articleTitle}\n\nCompany: ${companyName}`;
 
             const insertedPost = await t.one(
-              'INSERT INTO replies (posts_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
-              [post.posts_id , post.user_id, postContent]
+              'INSERT INTO replies (posts_id, user_id, content, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
+              [post.posts_id , post.user_id, postContent, post.posts_img]
             );
             const hashtags = post.content.match(/#(\w+)/g);
             if(hashtags){
@@ -112,8 +112,8 @@ const createReply = async (post) => {
           
            else{
             const insertedPost = await t.one(
-              'INSERT INTO replies (posts_id, user_id, content) VALUES ($1, $2, $3) RETURNING *',
-              [post.posts_id , post.user_id, post.content]
+              'INSERT INTO replies (posts_id, user_id, content, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
+              [post.posts_id , post.user_id, post.content, post.posts_img]
             );
 
             const mentionedUsers = post.content.match(/@(\w+)/g);
