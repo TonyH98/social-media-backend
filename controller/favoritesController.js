@@ -74,7 +74,7 @@ catch(error){
 })
 
 
-fav.post("/:userId/fav/:replyId", async (req , res) => {
+fav.post("/:userId/favR/:replyId", async (req , res) => {
 
     const {userId , replyId} = req.params
     
@@ -105,7 +105,7 @@ fav.delete("/:userId/delete/:postId", async (req , res) => {
 })
 
 
-fav.delete("/:userId/delete/:replyId", async (req , res) => {
+fav.delete("/:userId/deleteR/:replyId", async (req , res) => {
    
     const {userId, replyId} = req.params
 

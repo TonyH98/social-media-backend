@@ -95,7 +95,7 @@ const deleteFavorite = async (userId , postId) => {
 const getAllFavoritesReplies = async (userId) => {
     try {
         const favoritesByUser = await db.any(
-            `SELECT fr.favorites, fr.selected, fr.posts_id, fr.users_id,
+            `SELECT fr.favorites, fr.selected, fr.reply_id, fr.users_id,
             json_build_object(
                 'creator_id', fr.creator_id,
                 'content', r.content,
@@ -109,7 +109,7 @@ const getAllFavoritesReplies = async (userId) => {
             JOIN users u ON u.id = fr.creator_id
             JOIN replies r ON r.id = fr.reply_id
             JOIN users f ON f.id = fr.users_id
-            WHERE fp.users_id = $1`,
+            WHERE fr.users_id = $1`,
             userId
         );
         return favoritesByUser;
