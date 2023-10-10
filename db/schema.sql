@@ -101,6 +101,15 @@ CREATE TABLE favorite_posts(
     posts_id INTEGER
 );
 
+DROP TABLE IF EXISTS favorite_replies;
+CREATE TABLE favorite_replies(
+    favorites BOOLEAN DEFAULT TRUE,
+    selected BOOLEAN DEFAULT FALSE,
+    users_id INTEGER REFERENCES users(id),
+    creator_id INTEGER,
+    reply_id INTEGER
+);
+
 DROP TABLE IF EXISTS users_followers;
 CREATE TABLE users_followers(
     follow BOOLEAN DEFAULT TRUE,

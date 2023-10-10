@@ -89,4 +89,65 @@ const deleteFavorite = async (userId , postId) => {
 }
 
 
-module.exports={getAllFavorites , getFavorites, deleteFavorite, addFavorites}
+
+
+
+const getAllFavoritesReplies = async (userId) => {
+    try {
+        const favoritesByUser = await db.any(
+            `SELECT fr.favorites, fr.selected, fr.posts_id, fr.users_id,
+            json_build_object(
+                'creator_id', fr.creator_id,
+                'content', r.content,
+                'image', r.posts_img,
+                'date_created', to_char(r.date_created, 'MM/DD/YYYY'),
+                'profile_img', u.profile_img,
+                'username', u.username,
+                'profile_name', u.profile_name
+            ) AS post_creator
+            FROM favorite_replies fr
+            JOIN users u ON u.id = fr.creator_id
+            JOIN replies r ON r.id = fr.reply_id
+            JOIN users f ON f.id = fr.users_id
+            WHERE fp.users_id = $1`,
+            userId
+        );
+        return favoritesByUser;
+    } catch (error) {
+        console.log(error);
+        return error;
+    }
+};
+
+
+const addFavoritesReplies = async (userId, replyId, fav) => {
+
+    try{
+        const addFav = await db.one(
+            `INSERT INTO favorite_replies (users_id, reply_id, creator_id, favorites, selected) VALUES ($1, $2, $3, $4, $5)`,
+            [userId, replyId, fav.creator_id, true, false]
+        )
+        return addFav
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+    
+    }
+
+    const deleteFavoriteReplies = async (userId , replyId) => {
+        try{
+           const deleteFav = await db.one(
+        `DELETE FROM favorite_replies WHERE favorite_replies.users_id = $1 AND favorite_replies.reply_id = $2`,
+        [userId , replyId]
+           )
+           return deleteFav
+        }
+        catch(error){
+            console.log(error)
+            return error
+        }
+    }
+
+module.exports={getAllFavorites , getFavorites, deleteFavorite, addFavorites , getAllFavoritesReplies , addFavoritesReplies , deleteFavoriteReplies}
