@@ -195,7 +195,7 @@ const deleteReply = async (id) => {
 }
 
 
-const createReaction = async (react, userId, replyId) => {
+const createReactionR = async (react, userId, replyId) => {
   try {
     const existing = await db.oneOrNone(
       `SELECT reaction_type FROM reply_reactions
@@ -214,9 +214,10 @@ const createReaction = async (react, userId, replyId) => {
       await db.none(
         `INSERT INTO reply_reactions (user_id, reply_id, reaction_type)
          VALUES ($1, $2, $3)`,
-        [userId, postId, react]
+        [userId, replyId, react]
       );
     }
+    console.log(existing)
     return true;
   } catch (error) {
     console.log(error);
@@ -256,4 +257,4 @@ const getReaction = async (id) => {
 
 
 
-module.exports = {deleteReply , createReply, getReplies, createReaction, getReaction}
+module.exports = {deleteReply , createReply, getReplies, createReactionR, getReaction}

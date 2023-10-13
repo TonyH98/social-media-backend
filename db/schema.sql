@@ -82,7 +82,7 @@ CREATE TABLE replies(
 );
 
 DROP TABLE IF EXISTS reply_reactions;
-CREATE TABLE post_reactions (
+CREATE TABLE reply_reactions (
     user_id INTEGER REFERENCES users(id),
     reply_id INTEGER REFERENCES replies(id),
     post_username TEXT REFERENCES users(username),

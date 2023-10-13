@@ -4,7 +4,7 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
-const {deleteReply , createReply, getReplies, createReaction, getReaction} = require("../queries/replies")
+const {deleteReply , createReply, getReplies, createReactionR, getReaction} = require("../queries/replies")
 
 const reply = express.Router({mergeParams: true})
 
@@ -69,10 +69,10 @@ reply.delete("/:id", async (req , res) => {
 
 reply.post("/:userId/reactR/:replyId", async (req , res) => {
   try{
-      const { userId, replyId } = req.params;
+      const { userId, replyId} = req.params;
       const reaction = req.body.reaction; 
 
-      const createReactions = await createReaction(reaction, userId, replyId);
+      const createReactions = await createReactionR(reaction, userId, replyId);
 
       res.json(createReactions);
   }
@@ -87,9 +87,9 @@ reply.post("/:userId/reactR/:replyId", async (req , res) => {
 reply.get("/:id/reactionsR" , async (req , res) => {
 
   const {id} = req.params
-
   try{
-      const allReaction = await getReaction(id)
+    const allReaction = await getReaction(id)
+
       res.json(allReaction)
   }
   catch(error){
