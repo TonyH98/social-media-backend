@@ -71,7 +71,6 @@ CREATE TABLE post_reactions (
 );
 
 
-
 DROP TABLE IF EXISTS replies;
 CREATE TABLE replies(
     id SERIAL PRIMARY KEY,
@@ -80,6 +79,14 @@ CREATE TABLE replies(
     content VARCHAR(500) NOT NULL,
     posts_img TEXT,
     date_created DATE DEFAULT CURRENT_DATE
+);
+
+DROP TABLE IF EXISTS reply_reactions;
+CREATE TABLE post_reactions (
+    user_id INTEGER REFERENCES users(id),
+    reply_id INTEGER REFERENCES replies(id),
+    post_username TEXT REFERENCES users(username),
+    reaction_type VARCHAR(10) CHECK (reaction_type IN ('like', 'dislike'))
 );
 
 DROP TABLE IF EXISTS post_hashtags;

@@ -22,7 +22,8 @@ const getAllPosts = async (user_name) => {
             ) AS creator, posts.user_id
             FROM posts
             JOIN users ON posts.user_name = users.username
-            WHERE posts.user_name = $1`,
+            WHERE posts.user_name = $1
+            ORDER BY posts.date_created ASC`,
             user_name
         );
         return allPosts;

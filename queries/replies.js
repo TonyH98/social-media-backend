@@ -194,4 +194,66 @@ const deleteReply = async (id) => {
     }
 }
 
-module.exports = {deleteReply , createReply, getReplies}
+
+const createReaction = async (react, userId, replyId) => {
+  try {
+    const existing = await db.oneOrNone(
+      `SELECT reaction_type FROM reply_reactions
+      WHERE user_id = $1 AND reply_id = $2`,
+      [userId, replyId]
+    );
+
+    if (existing) {
+      // Delete the reaction
+      await db.none(
+        `DELETE FROM reply_reactions WHERE user_id = $1 AND reply_id = $2`,
+        [userId, replyId]
+      );
+    } else {
+      // Insert a new reaction
+      await db.none(
+        `INSERT INTO reply_reactions (user_id, reply_id, reaction_type)
+         VALUES ($1, $2, $3)`,
+        [userId, postId, react]
+      );
+    }
+    return true;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
+
+
+const getReaction = async (id) => {
+  try {
+    const reaction = await db.one(
+      `SELECT
+        COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
+        COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
+        FROM reply_reactions
+        WHERE reply_id = $1;`,
+      [id]
+    );
+
+    // Create a result object that includes the likes, dislikes, and post_id
+    const result = {
+      likes: reaction.likes,
+      dislikes: reaction.dislikes,
+      reply_id: id,
+    };
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
+
+
+
+
+
+module.exports = {deleteReply , createReply, getReplies, createReaction, getReaction}
