@@ -23,7 +23,7 @@ const getAllFollowing = async (userId) => {
   const getAllFollowers = async (userId) => {
       try{
         const getFollowers = await db.any(
-          `SELECT u.username, u.profile_img, u.bio, u.profile_name
+          `SELECT u.username, u.profile_img, u.bio, u.profile_name, u.id
           FROM users_followers uf
           JOIN users f ON f.id = uf.following_id
           JOIN users u ON u.id = uf.user_id
