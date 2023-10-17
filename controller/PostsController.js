@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 
-const {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction} = require("../queries/Posts")
+const {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies} = require("../queries/Posts")
 
 
 const posts = express.Router({mergeParams: true})
@@ -52,6 +52,18 @@ catch(error){
 
 })
 
+
+posts.get("/:id/replies", async (req , res) => {
+    const {id} = req.params
+
+    try{
+        const getAllReplies = await getAllUsersReplies(id)
+        res.json(getAllReplies)
+    }
+    catch(error){
+        res.json(error)
+    }
+})
 
 posts.get("/:id", async (req , res) => {
 

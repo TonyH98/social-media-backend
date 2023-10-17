@@ -20,6 +20,13 @@ const getAllFollowing = async (userId) => {
         return error
     }
   }
+
+
+
+
+
+
+
   const getAllFollowers = async (userId) => {
       try{
         const getFollowers = await db.any(

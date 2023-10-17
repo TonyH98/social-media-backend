@@ -289,5 +289,30 @@ const getReaction = async (id) => {
 
   
 
+const getAllUsersReplies = async (userId) => {
+  try{
+      const allReplies = await db.any(
+          `SELECT r.id, r.posts_id, r.content, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_img,
+          json_build_object(
+              'id', r.user_id,
+              'username', users.username,
+              'firstname', users.firstname,
+              'lastname', users.lastname,
+              'profile_name', users.profile_name,
+              'profile_img', users.profile_img
+          ) AS creator
+      FROM replies r 
+      JOIN users ON users.id = r.user_id
+      WHERE r.user_id = $1
+      GROUP BY r.id, r.posts_id, users.username, users.firstname, users.lastname, users.profile_name, users.profile_img;`,
+     userId
 
-module.exports = {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction}
+      );
+      return allReplies
+  }
+  catch(error){
+      console.log(error)
+      return error
+  }
+}
+module.exports = {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies}
