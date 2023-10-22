@@ -96,9 +96,9 @@ const createPost = async (post) => {
         const articleImage = $('meta[property="og:image"]').attr('content');
         const companyName = $('meta[property="og:site_name"]').attr('content');
 
-
+        
         const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" width="400" height="300" /></a>`;
-
+        
 
         const postContentWithoutUrl = post.content.replace(articleUrl, '');
         
@@ -112,28 +112,61 @@ const createPost = async (post) => {
           [post.user_name, postContent, post.user_id, post.posts_img]
         );
 
-        
+        const mentionedUsers = post.content.match(/@(\w+)/g);
+        if (mentionedUsers) {
+          for (const mention of mentionedUsers) {
+            const username = mention.substring(1);
+            const user = await db.oneOrNone(
+              'SELECT id, email, firstname, notifications FROM users WHERE username = $1',
+              username
+            );
+  
+            if (user) {
+              await t.one(
+                'INSERT INTO notifications (users_id, posts_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                [user.id, insertedPost.id, false, post.user_id, false]
+              );
+             
+                await sendEmail(user.email, user.firstname);
+            }
+          }
+        }
+
+
         const hashtags = post.content.match(/#(\w+)/g);
         if (hashtags) {
-          for (const hash of hashtags) {
-            try {
-              const insertedHashtag = await db.one(
-                'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
+          for(const hash of hashtags){
+            try{
+              const existingHashtag = await db.oneOrNone(
+                `SELECT id FROM hashtags WHERE tag_names = $1`,
                 hash
-              );
-  
-              await db.none(
-                'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
-                [insertedPost.id, insertedHashtag.id, post.user_id]
-              );
-            } catch (error) {
+              )
+
+              if(!existingHashtag){
+                const insertedHashtag = await db.one(
+                  `INSERT INTO hashtags (tag_names) VALUES ($1) RETURNING *`,
+                  hash
+                )
+                await t.none(
+                  'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                  [insertedPost.id, insertedHashtag.id, post.user_id]
+                )
+              }
+              else{
+                await t.none(
+                  'INSERT INTO post_hashtags (post_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                  [insertedPost.id, existingHashtag.id, post.user_id]
+                );
+              }
+            }
+            catch(error){
               if (error.code !== '23505') {
                 throw error;
               }
             }
           }
-          return insertedPost;
         }
+        return insertedPost;
 
       }
 

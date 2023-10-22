@@ -94,8 +94,8 @@ users.post("/signup", checkPassword, checkEmail, async(req , res) => {
         const user = await loginUser(req.body)
     
         if(user.email){
-            const {id , email} = user
-            res.status(200).json({message: "Login Successful", id, email});
+            const {id , email, dark_mode} = user
+            res.status(200).json({message: "Login Successful", id, email, dark_mode});
         }
         else{
             res.status(401).json({message: "User Not Found"})

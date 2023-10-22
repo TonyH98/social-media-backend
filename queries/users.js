@@ -75,8 +75,9 @@ const loginUser = async (user) => {
         
         // Check if the user's information exists in the database and if the provided password matches the one stored in the database.
         if (oneUser && await bcrypt.compare(password, oneUser.password)) {
-            const {email , id} = oneUser;
-            return {email , id};
+            const {email, id, dark_mode} = oneUser;
+            console.log(oneUser)
+            return {email, id , dark_mode};
         } else {
             // If the provided credentials are incorrect, throw an error to prevent the user from logging in.
             throw new Error("Invalid email or password.");

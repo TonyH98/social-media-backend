@@ -3,6 +3,9 @@ const nodemailer = require('nodemailer')
 
 const password = process.env.Email_Password
 
+const cheerio = require('cheerio')
+const axios = require('axios')
+
 const getReplies = async (postId) => {
     try{
         const allReplies = await db.any(
@@ -87,27 +90,62 @@ const createReply = async (post) => {
               'INSERT INTO replies (posts_id, user_id, content, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
               [post.posts_id , post.user_id, postContent, post.posts_img]
             );
-            const hashtags = post.content.match(/#(\w+)/g);
-            if(hashtags){
-              for (const hash of hashtags) {
-                try {
-                  const insertedHashtag = await t.one(
-                    'INSERT INTO hashtags (tag_names) VALUES ($1) ON CONFLICT (tag_names) DO UPDATE SET tag_names = $1 RETURNING id',
-                    hash
-                  );
+
+            const mentionedUsers = post.content.match(/@(\w+)/g);
+            if (mentionedUsers) {
+              for (const mention of mentionedUsers) {
+                const username = mention.substring(1);
+                const user = await db.oneOrNone(
+                  'SELECT id, email, firstname, notifications FROM users WHERE username = $1',
+                  username
+                );
       
-                  await t.none(
-                    'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
-                    [insertedPost.id, insertedHashtag.id, post.user_id]
+                if (user) {
+                  await t.one(
+                    'INSERT INTO notifications (users_id, reply_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                    [user.id, insertedPost.id, false, post.user_id, false]
                   );
-                } catch (error) {
-                  if (error.code !== '23505') {
-                    throw error;
+                  
+                    await sendEmail(user.email, user.firstname);
+                  
+                }
+              }
+            }
+
+             const hashtags = post.content.match(/#(\w+)/g);
+
+              if(hashtags){
+                for(const hash of hashtags){
+                  try{
+                    const existingHashtag = await db.oneOrNone(
+                      `SELECT id FROM hashtags WHERE tag_names = $1`,
+                       hash
+                    )
+                    if(!existingHashtag){
+                      const insertedHashtag = await db.one(
+                        `INSERT INTO hashtags (tag_names) VALUES ($1) RETURNING *`,
+                        hash
+                      )
+                      await t.none(
+                        'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                        [insertedPost.id, insertedHashtag.id, post.user_id]
+                      )
+                    }
+                    else{
+                      await t.none(
+                        'INSERT INTO post_hashtags (reply_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                          [insertedPost.id, existingHashtag.id, post.user_id]
+                      )
+                    }
+                  }
+                  catch(error){
+                    if (error.code !== '23505') {
+                      throw error;
+                    }
                   }
                 }
               }
-              return insertedPost
-            }
+            return insertedPost
           }
           
            else{
