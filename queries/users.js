@@ -1,5 +1,10 @@
 const db = require("../db/dbConfig")
 
+const nodemailer = require('nodemailer')
+
+const password = process.env.Email_Password
+
+
 const bcrypt = require('bcrypt')
 
 const saltRounds = 10
@@ -38,30 +43,119 @@ const checkExistingUser = async (username , email) => {
     }
 }
 
-const newUser = async (user) => {
-    const {username , firstname, lastname, email, profile_img, banner_img, DOB, bio, profile_name, password } = user
-
-    
-    try{
-        const userExist = await checkExistingUser(username , email)
-        if(userExist){
-            throw new Error('Username or email already exists')
-        }
-        const salt = await bcrypt.genSalt(saltRounds)
-         
-        const hashedPassword = await bcrypt.hash(password , salt)
-
-        const newUser = await db.one(
-            'INSERT INTO users (username , firstname, lastname, email, profile_img, banner_img, DOB, bio, profile_name, notifications, dark_mode, password) VALUES($1 , $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
-            [username , firstname, lastname, email, profile_img, banner_img, DOB, bio, profile_name, false, false, hashedPassword]
-        );
-            return newUser
-    }
-    catch(err){
-        console.log(err)
-        return err
-    }
+const generateVerificationCode = () => {
+  return Math.floor(10000 + Math.random() * 90000)
 }
+
+const sendVerificationEmail = async (email, verificationCode) => {
+  let transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+    user: 'tonyhoangtesting@gmail.com',
+    pass: password
+  }
+
+  });
+
+  let mailOptions = {
+      from: 'Tony Hoang <tonyhoangtesting@gmail.com>',
+      to: email,
+      subject: 'Verification Code for Sign-up',
+      text: `Your verification code is: ${verificationCode}`,
+  };
+
+  try {
+      let info = await transporter.sendMail(mailOptions);
+      console.log('Email sent: ' + info.response);
+  } catch (error) {
+      console.log(error);
+      throw new Error('Failed to send verification email.');
+  }
+};
+
+
+
+
+let userTemporaryStorage = {}; // Temporary storage for user data
+
+const newUser = async (user) => {
+  const { username, firstname, lastname, email, profile_img, banner_img, DOB, bio, profile_name, password } = user;
+
+  try {
+    const userExist = await checkExistingUser(username, email);
+    if (userExist) {
+      throw new Error('Username or email already exists');
+    }
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const verificationCode = generateVerificationCode();
+    const hashedVerificationCode = await bcrypt.hash(verificationCode.toString(), salt);
+
+    // Store user data in temporary storage
+    userTemporaryStorage = {
+      username,
+      firstname,
+      lastname,
+      email,
+      profile_img,
+      banner_img,
+      DOB,
+      bio,
+      profile_name,
+      hashedPassword,
+      hashedVerificationCode,
+    };
+
+    await sendVerificationEmail(email, verificationCode);
+    return 'Verification code sent to your email. Please check your inbox.';
+  } catch (err) {
+    console.log(err);
+    throw err; // Re-throw the error to handle it at the higher level
+  }
+};
+
+
+const verifyUser = async (email, verificationCode) => {
+  const storedUser = userTemporaryStorage;
+
+  if (!storedUser || storedUser.email !== email) {
+    throw new Error('User data not found in temporary storage');
+  }
+
+  const isCodeMatched = await bcrypt.compare(verificationCode.toString(), storedUser.hashedVerificationCode);
+
+  if (isCodeMatched) {
+    await db.query(
+      `INSERT INTO users 
+        (username, firstname, lastname, email, profile_img, banner_img, DOB, bio, profile_name, notifications, dark_mode, password, verification) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [
+        storedUser.username,
+        storedUser.firstname,
+        storedUser.lastname,
+        storedUser.email,
+        storedUser.profile_img,
+        storedUser.banner_img,
+        storedUser.DOB,
+        storedUser.bio,
+        storedUser.profile_name,
+        false,
+        false,
+        storedUser.hashedPassword,
+        storedUser.hashedVerificationCode,
+      ]
+    );
+
+    userTemporaryStorage = {};
+    return 'User created successfully';
+  } else {
+    throw new Error('Incorrect verification code.');
+  }
+};
+
 
 const loginUser = async (user) => {
 
@@ -185,5 +279,6 @@ module.exports={
     getInterestFromUserByIndex,
     getInterestsFromUsers,
     addInterestToUser,
-    deleteInterestsFromUsers
+    deleteInterestsFromUsers,
+    verifyUser
 }

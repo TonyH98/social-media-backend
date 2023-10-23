@@ -19,7 +19,8 @@ CREATE TABLE users(
     date_created DATE DEFAULT CURRENT_DATE,
     links TEXT,
     dark_mode BOOLEAN,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    verification TEXT
 );
 
 

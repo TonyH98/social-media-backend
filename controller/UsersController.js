@@ -16,6 +16,7 @@ const {
     getInterestFromUserByIndex,
     getInterestsFromUsers,
     addInterestToUser,
+    verifyUser,
     deleteInterestsFromUsers
 } = require("../queries/users")
 
@@ -82,13 +83,30 @@ users.get("/:id", async (req , res) => {
 
 users.post("/signup", checkPassword, checkEmail, async(req , res) => {
 
-    const user = await newUser(req.body);
+  try {
+    const result = await newUser(req.body); // Assuming newUser returns a success message
+    res.status(200).json({ message: result }); // Returning the success message
+  } catch (err) {
+    console.error('Error in signup:', err);
+    res.status(500).json({ error: 'Failed to sign up' }); // Handling the error case
+  }
     
-    const {id , username} = user
+})
     
-    res.status(200).json({username, id});
-    
-    })
+users.post("/verifyUsers", async(req , res) => {
+
+  const { email, verificationCode } = req.body;
+
+  try {
+    const result = await verifyUser(email, verificationCode); // Assuming verifyUser returns a success message
+    res.status(200).json({ message: result }); // Returning the success message
+  } catch (err) {
+    console.error('Error in verification:', err);
+    res.status(500).json({ error: 'Verification failed' }); // Handling the error case
+  }
+
+})
+
     
     users.post("/login", async (req , res) => {
         const user = await loginUser(req.body)
