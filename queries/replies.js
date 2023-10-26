@@ -105,8 +105,9 @@ const createReply = async (post) => {
                     'INSERT INTO notifications (users_id, reply_id, is_read, sender_id, selected) VALUES ($1, $2, $3, $4, $5) RETURNING *',
                     [user.id, insertedPost.id, false, post.user_id, false]
                   );
-                  
-                    await sendEmail(user.email, user.firstname);
+                if(user.notifications){
+                  await sendEmail(user.email, user.firstname);
+                }
                   
                 }
               }
@@ -169,7 +170,9 @@ const createReply = async (post) => {
                     [user.id, insertedPost.id, false, post.user_id, false]
                   );
                   
+                  if(user.notifications){
                     await sendEmail(user.email, user.firstname);
+                  }
                   
                 }
               }
