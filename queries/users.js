@@ -1,5 +1,6 @@
 const db = require("../db/dbConfig")
 
+
 const nodemailer = require('nodemailer')
 
 const password = process.env.Email_Password
@@ -107,13 +108,14 @@ const newUser = async (user) => {
       profile_name,
       hashedPassword,
       hashedVerificationCode,
+      currentTimes: new Date()
     };
 
     await sendVerificationEmail(email, verificationCode);
     return 'Verification code sent to your email. Please check your inbox.';
   } catch (err) {
     console.log(err);
-    throw err; // Re-throw the error to handle it at the higher level
+    throw err; 
   }
 };
 
@@ -123,6 +125,15 @@ const verifyUser = async (email, verificationCode) => {
 
   if (!storedUser || storedUser.email !== email) {
     throw new Error('User data not found in temporary storage');
+  }
+
+  let fiveMinute = 5 * 60 * 1000
+  let currentTime = new Date()
+  let timeLaspe = currentTime - storedUser.currentTimes
+
+  if(timeLaspe > fiveMinute){
+    userTemporaryStorage = {}
+    throw new Error("Code Expired")
   }
 
   const isCodeMatched = await bcrypt.compare(verificationCode.toString(), storedUser.hashedVerificationCode);
@@ -157,6 +168,8 @@ const verifyUser = async (email, verificationCode) => {
 };
 
 
+
+
 const loginUser = async (user) => {
 
     const {password , email} = user
@@ -169,16 +182,14 @@ const loginUser = async (user) => {
         
         // Check if the user's information exists in the database and if the provided password matches the one stored in the database.
         if (oneUser && await bcrypt.compare(password, oneUser.password)) {
-            const {email, id, dark_mode} = oneUser;
+            const {email, id} = oneUser;
             console.log(oneUser)
-            return {email, id , dark_mode};
+            return {email, id };
         } else {
-            // If the provided credentials are incorrect, throw an error to prevent the user from logging in.
             throw new Error("Invalid email or password.");
         }
     }
     catch (err) {
-        // Catch any errors thrown and return an error message.
         return err.message;
     }
 
