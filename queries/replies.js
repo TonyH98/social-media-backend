@@ -270,23 +270,27 @@ const createReactionR = async (react, userId, replyId) => {
 
 const getReaction = async (id) => {
   try {
-    const reaction = await db.one(
-      `SELECT
-        COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) AS likes,
-        COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) AS dislikes
-        FROM reply_reactions
-        WHERE reply_id = $1;`,
-      [id]
-    );
+   const reactions = await db.any(
+     'SELECT user_id, reaction_type FROM reply_reactions WHERE reply_id = $1',
+     [id]
+   )
 
-    // Create a result object that includes the likes, dislikes, and post_id
-    const result = {
-      likes: reaction.likes,
-      dislikes: reaction.dislikes,
-      reply_id: id,
-    };
+   const likes = reactions.filter((reaction) => reaction.reaction_type === "like")
+   const dislikes = reactions.filter((reaction) => reaction.reaction_type === "dislike")
 
-    return result;
+   const likeId = likes.map((like) => like.user_id)
+   const dislikeId = dislikes.map((dislike) => dislike.user_id)
+
+   const result = {
+    likes: likes.length,
+    dislikes: dislikes.length,
+    likeId,
+    dislikeId,
+    reply_id: id
+  };
+   return result 
+
+
   } catch (error) {
     console.log(error);
     return error;
