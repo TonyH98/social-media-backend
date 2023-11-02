@@ -108,7 +108,7 @@ const createPost = async (post) => {
         
 
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, post.gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
           [post.user_name, postContent, post.user_id, post.posts_img, post.gif]
         );
 

@@ -47,7 +47,7 @@ CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
     user_name TEXT REFERENCES users(username),
     user_id INTEGER REFERENCES users(id),
-    content TEXT NOT NULL,
+    content TEXT,
     posts_img TEXT,
     gif TEXT,
     date_created DATE DEFAULT CURRENT_DATE
@@ -79,7 +79,7 @@ CREATE TABLE replies(
     id SERIAL PRIMARY KEY,
     posts_id INTEGER REFERENCES posts(id),
     user_id INTEGER REFERENCES users(id),
-    content VARCHAR(500) NOT NULL,
+    content VARCHAR(500),
     posts_img TEXT,
     gif Text,
     date_created DATE DEFAULT CURRENT_DATE

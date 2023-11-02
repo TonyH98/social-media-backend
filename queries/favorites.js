@@ -104,7 +104,7 @@ const getAllFavoritesReplies = async (userId) => {
                 'profile_img', u.profile_img,
                 'username', u.username,
                 'profile_name', u.profile_name,
-                'gif, r.gif
+                'gif', r.gif
             ) AS post_creator
             FROM favorite_replies fr
             JOIN users u ON u.id = fr.creator_id
