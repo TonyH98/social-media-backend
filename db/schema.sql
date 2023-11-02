@@ -81,6 +81,7 @@ CREATE TABLE replies(
     user_id INTEGER REFERENCES users(id),
     content VARCHAR(500) NOT NULL,
     posts_img TEXT,
+    gif Text,
     date_created DATE DEFAULT CURRENT_DATE
 );
 
