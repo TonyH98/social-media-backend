@@ -326,7 +326,7 @@ const getReaction = async (id) => {
 const getAllUsersReplies = async (userId) => {
   try{
       const allReplies = await db.any(
-          `SELECT r.id, r.posts_id, r.content, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_img,
+          `SELECT r.id, r.posts_id, r.content, r.gif, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_img,
           json_build_object(
               'id', r.user_id,
               'username', users.username,

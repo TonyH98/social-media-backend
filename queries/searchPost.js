@@ -12,7 +12,8 @@ const searchPost = async (tagName) => {
       json_build_object(
         'username', p.user_name,
         'profile_name', u.profile_name,
-        'profile_img', u.profile_img
+        'profile_img', u.profile_img,
+        'id', u.id
       ) as creator_details
       FROM post_hashtags ph
       JOIN posts p ON p.id = ph.post_id

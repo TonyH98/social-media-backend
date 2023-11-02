@@ -43,7 +43,10 @@ const getAllReplyNotifications = async (user_id) => {
                 'date_created', to_char(replies.date_created, 'MM/DD/YYYY'),
                 'username', users.username,
                 'profile_img', users.profile_img,
-                'profile_name', users.profile_name
+                'profile_name', users.profile_name,
+                'post_img', replies.posts_img,
+                'gif', replies.gif,
+                'posts_id', replies.posts_id
             ) AS post_content 
             FROM notifications
             JOIN replies ON replies.id = notifications.reply_id 
