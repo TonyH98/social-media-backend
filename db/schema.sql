@@ -49,6 +49,7 @@ CREATE TABLE posts (
     user_id INTEGER REFERENCES users(id),
     content TEXT NOT NULL,
     posts_img TEXT,
+    gif TEXT,
     date_created DATE DEFAULT CURRENT_DATE
 );
 

@@ -11,7 +11,7 @@ const axios = require('axios')
 const getAllPosts = async (user_name) => {
     try {
         const allPosts = await db.any(
-            `SELECT posts.id, posts.content, posts.posts_img, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+            `SELECT posts.id, posts.content, posts.posts_img, posts.gif, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
             json_build_object(
                 'id', users.id,
                 'username', posts.user_name,
@@ -36,7 +36,7 @@ const getAllPosts = async (user_name) => {
 const getPost = async (user_name, id) => {
   try {
       const allPosts = await db.one(
-          `SELECT posts.id, posts.content, posts.posts_img, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT posts.id, posts.content, posts.posts_img, posts.gif, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', users.id,
               'username', posts.user_name,
@@ -108,8 +108,8 @@ const createPost = async (post) => {
         
 
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
-          [post.user_name, postContent, post.user_id, post.posts_img]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, post.gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+          [post.user_name, postContent, post.user_id, post.posts_img, post.gif]
         );
 
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -175,8 +175,8 @@ const createPost = async (post) => {
   
       else{
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img) VALUES ($1, $2, $3, $4) RETURNING *',
-          [post.user_name, post.content, post.user_id, post.posts_img]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+          [post.user_name, post.content, post.user_id, post.posts_img, post.gif]
         );
   
         const mentionedUsers = post.content.match(/@(\w+)/g);
