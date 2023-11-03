@@ -50,6 +50,8 @@ CREATE TABLE posts (
     content TEXT,
     posts_img TEXT,
     gif TEXT,
+    repost BOOLEAN,
+    repost_id INTEGER,
     date_created DATE DEFAULT CURRENT_DATE
 );
 

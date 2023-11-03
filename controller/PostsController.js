@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 
-const {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies} = require("../queries/Posts")
+const {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies, createRepost} = require("../queries/Posts")
 
 
 const posts = express.Router({mergeParams: true})
@@ -92,6 +92,22 @@ posts.post("/", upload.single('posts_img'), async (req , res) => {
     }
 })
 
+
+posts.post("/:username/repost/:postId", async (req , res) => {
+    const {username, postId} = req.params
+
+    try{
+        const post = await createRepost(username , postId, req.body)
+    
+        res.json(post)
+    }
+    
+    catch(error){
+        console.log(error)
+        res.status(400).json({ error: error });
+    }
+    
+    })
 
 posts.delete("/:id", async (req , res) => {
     const {id} = req.params

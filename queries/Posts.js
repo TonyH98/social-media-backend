@@ -9,29 +9,64 @@ const axios = require('axios')
 
 
 const getAllPosts = async (user_name) => {
-    try {
-        const allPosts = await db.any(
-            `SELECT posts.id, posts.content, posts.posts_img, posts.gif, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
-            json_build_object(
-                'id', users.id,
-                'username', posts.user_name,
-                'firstname', users.firstname,
-                'lastname', users.lastname,
-                'profile_name', users.profile_name,
-                'profile_img', users.profile_img
-            ) AS creator, posts.user_id
-            FROM posts
-            JOIN users ON posts.user_name = users.username
-            WHERE posts.user_name = $1
-            ORDER BY posts.date_created ASC`,
-            user_name
-        );
-        return allPosts;
-    } catch (error) {
-        console.log(error);
-        return error;
-    }
+  try {
+      const checkRepost = await db.any(
+          `SELECT repost FROM posts WHERE posts.user_name = $1`, [user_name]
+      );
+
+      let allPosts = [];
+
+      for (let check of checkRepost) {
+          if (check.repost === false) {
+              const posts = await db.any(
+                  `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+                  json_build_object(
+                      'id', users.id,
+                      'username', posts.user_name,
+                      'firstname', users.firstname,
+                      'lastname', users.lastname,
+                      'profile_name', users.profile_name,
+                      'profile_img', users.profile_img
+                  ) AS creator, posts.user_id
+                  FROM posts
+                  JOIN users ON posts.user_name = users.username
+                  WHERE posts.user_name = $1
+                  ORDER BY posts.date_created ASC`,
+                  [user_name]
+              );
+              allPosts = allPosts.concat(posts);
+          } else {
+            const posts = await db.any(
+              `SELECT p.id, p.user_name, p.repost, 
+              json_build_object(
+                  'creator_id', p.user_id,
+                  'profile_img', u.profile_img,
+                  'username', u.username,
+                  'profile_name', u.profile_name
+              ) AS original_creator, 
+              json_build_object(
+                  'content', o.content,
+                  'post_img', o.posts_img,
+                  'gif', o.gif,
+                  'original_post_id', o.repost_id
+              ) AS original_content FROM posts p
+              JOIN users u ON u.id = p.user_id
+              JOIN posts o ON o.repost_id = p.id 
+              WHERE p.user_name = $1`,
+              [user_name]
+          );
+              allPosts = allPosts.concat(posts);
+          }
+      }
+      return allPosts;
+  } catch (error) {
+      console.error(error);
+      return error;
+  }
 };
+
+
+
 
 const getPost = async (user_name, id) => {
   try {
@@ -108,8 +143,8 @@ const createPost = async (post) => {
         
 
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-          [post.user_name, postContent, post.user_id, post.posts_img, post.gif]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+          [post.user_name, postContent, post.user_id, post.posts_img, post.gif, false, null]
         );
 
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -175,8 +210,8 @@ const createPost = async (post) => {
   
       else{
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-          [post.user_name, post.content, post.user_id, post.posts_img, post.gif]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+          [post.user_name, post.content, post.user_id, post.posts_img, post.gif, false, null]
         );
   
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -248,6 +283,24 @@ const createPost = async (post) => {
   }
 };
 
+
+
+const createRepost = async (username , postId, post) => {
+
+try{
+  const addRepost = await db.one(
+    `INSERT INTO posts (user_name, repost_id, user_id, repost) VALUES ($1, $2, $3, $4)`,
+    [username , postId, post.user_id, true]
+  )
+  return addRepost
+}
+catch(error){
+  console.log(error)
+  return error
+}
+
+
+}
 
 
 const deletePosts = async (id) => {
@@ -349,4 +402,4 @@ const getAllUsersReplies = async (userId) => {
       return error
   }
 }
-module.exports = {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies}
+module.exports = {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies, createRepost}
