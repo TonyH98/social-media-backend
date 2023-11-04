@@ -17,6 +17,7 @@ const getAllPosts = async (user_name) => {
       let allPosts = [];
 
       for (let check of checkRepost) {
+
           if (check.repost === false) {
               const posts = await db.any(
                   `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
@@ -36,6 +37,7 @@ const getAllPosts = async (user_name) => {
               );
               allPosts = allPosts.concat(posts);
           } else {
+            console.log(check)
             const posts = await db.any(
               `SELECT p.id, p.user_name, p.repost, 
               json_build_object(
@@ -46,13 +48,14 @@ const getAllPosts = async (user_name) => {
               ) AS original_creator, 
               json_build_object(
                   'content', o.content,
-                  'post_img', o.posts_img,
+                  'posts_img', o.posts_img,
                   'gif', o.gif,
-                  'original_post_id', o.repost_id
-              ) AS original_content FROM posts p
+                  'repost_id', p.repost_id
+              ) AS original_content 
+              FROM posts p
               JOIN users u ON u.id = p.user_id
-              JOIN posts o ON o.repost_id = p.id 
-              WHERE p.user_name = $1`,
+              JOIN posts o ON p.repost_id = o.id 
+              WHERE p.user_name = $1;`,
               [user_name]
           );
               allPosts = allPosts.concat(posts);
