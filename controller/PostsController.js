@@ -98,7 +98,9 @@ posts.post("/:username/repost/:postId", async (req , res) => {
 
     try{
         const post = await createRepost(username , postId, req.body)
-    
+        if(post === "Already executing..."){
+            return res.status(409).json({ error: "Request is being processed." });
+        }
         res.json(post)
     }
     

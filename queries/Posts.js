@@ -14,13 +14,13 @@ const getAllPosts = async (user_name) => {
       `SELECT repost FROM posts WHERE posts.user_name = $1`, [user_name]
     );
 
-    let allPosts = [];
-
+    let allPosts = {};
+    
     for (let check of checkRepost) {
 
       if (check.repost === false) {
         const posts = await db.any(
-          `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT  posts.id, posts.content, posts.posts_img, posts.user_name, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', users.id,
               'username', posts.user_name,
@@ -31,23 +31,21 @@ const getAllPosts = async (user_name) => {
           ) AS creator, posts.user_id
           FROM posts
           JOIN users ON posts.user_name = users.username
-          WHERE posts.user_name = $1
-          ORDER BY posts.date_created ASC`,
+          WHERE posts.user_name = $1`,
           [user_name]
         );
 
         for (let post of posts) {
           if (!(post.content === null || post.content === '') || !(post.posts_img === null || post.posts_img === '') || !(post.gif === null || post.gif === '')) {
-            if (!allPosts.some((p) => p.id === post.id)) {
-              allPosts.push(post);
+            if (!allPosts[post.id]) {
+              allPosts[post.id] = post;
             }
           }
         }
       } else {
 
         const posts = await db.any(
-
-          `SELECT o.content, p.user_name, o.posts_img, o.gif, p.repost, p.repost_id AS id, to_char(o.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT p.id AS post_id, o.content, p.user_name, o.posts_img, o.gif, p.repost, p.repost_id AS id, to_char(o.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', u.id,
               'username', u.username,
@@ -66,17 +64,21 @@ const getAllPosts = async (user_name) => {
 
         for (let post of posts) {
           if (!(post.content === null || post.content === '') || !(post.posts_img === null || post.posts_img === '') || !(post.gif === null || post.gif === '')) {
-            allPosts = allPosts.concat(post);
+            if (!allPosts[post.post_id]) {
+              allPosts[post.post_id] = post;
+            }
           }
         }
       }
     }
-    return allPosts;
+
+    return Object.values(allPosts);
   } catch (error) {
     console.error(error);
     return error;
   }
 };
+
 
 
 
