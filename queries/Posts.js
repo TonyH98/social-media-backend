@@ -46,29 +46,26 @@ const getAllPosts = async (user_name) => {
       } else {
 
         const posts = await db.any(
-          `SELECT p.id, p.user_name, p.repost, 
+
+          `SELECT o.content, p.user_name, o.posts_img, o.gif, p.repost, p.repost_id AS id, to_char(o.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
-              'id', p.user_id,
-              'profile_img', u.profile_img,
+              'id', u.id,
               'username', u.username,
-              'profile_name', u.profile_name
+              'firstname', u.firstname,
+              'lastname', u.lastname,
+              'profile_name', u.profile_name,
+              'profile_img', u.profile_img
           ) AS creator, 
-          json_build_object(
-              'content', o.content,
-              'posts_img', o.posts_img,
-              'gif', o.gif,
-              'time', to_char(o.date_created, 'MM/DD/YYYY'),
-              'repost_id', p.repost_id
-          ) AS original_content 
-          FROM posts p
-          JOIN users u ON u.id = p.user_id
-          JOIN posts o ON p.repost_id = o.id 
-          WHERE p.user_name = $1;`,
-          [user_name]
-        );
+          p.user_id
+      FROM posts p
+      JOIN users u ON u.id = p.user_id
+      JOIN posts o ON p.repost_id = o.id 
+      WHERE p.user_name = $1;`,
+      [user_name]
+      );
 
         for (let post of posts) {
-          if (!(post.original_content.content === null || post.original_content.content === '') || !(post.original_content.posts_img === null || post.original_content.posts_img === '') || !(post.original_content.gif === null || post.original_content.gif === '')) {
+          if (!(post.content === null || post.content === '') || !(post.posts_img === null || post.posts_img === '') || !(post.gif === null || post.gif === '')) {
             allPosts = allPosts.concat(post);
           }
         }
