@@ -10,63 +10,77 @@ const axios = require('axios')
 
 const getAllPosts = async (user_name) => {
   try {
-      const checkRepost = await db.any(
-          `SELECT repost FROM posts WHERE posts.user_name = $1`, [user_name]
-      );
+    const checkRepost = await db.any(
+      `SELECT repost FROM posts WHERE posts.user_name = $1`, [user_name]
+    );
 
-      let allPosts = [];
+    let allPosts = [];
 
-      for (let check of checkRepost) {
+    for (let check of checkRepost) {
 
-          if (check.repost === false) {
-              const posts = await db.any(
-                  `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
-                  json_build_object(
-                      'id', users.id,
-                      'username', posts.user_name,
-                      'firstname', users.firstname,
-                      'lastname', users.lastname,
-                      'profile_name', users.profile_name,
-                      'profile_img', users.profile_img
-                  ) AS creator, posts.user_id
-                  FROM posts
-                  JOIN users ON posts.user_name = users.username
-                  WHERE posts.user_name = $1
-                  ORDER BY posts.date_created ASC`,
-                  [user_name]
-              );
-              allPosts = allPosts.concat(posts);
-          } else {
-            console.log(check)
-            const posts = await db.any(
-              `SELECT p.id, p.user_name, p.repost, 
-              json_build_object(
-                  'creator_id', p.user_id,
-                  'profile_img', u.profile_img,
-                  'username', u.username,
-                  'profile_name', u.profile_name
-              ) AS original_creator, 
-              json_build_object(
-                  'content', o.content,
-                  'posts_img', o.posts_img,
-                  'gif', o.gif,
-                  'repost_id', p.repost_id
-              ) AS original_content 
-              FROM posts p
-              JOIN users u ON u.id = p.user_id
-              JOIN posts o ON p.repost_id = o.id 
-              WHERE p.user_name = $1;`,
-              [user_name]
-          );
-              allPosts = allPosts.concat(posts);
+      if (check.repost === false) {
+        const posts = await db.any(
+          `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          json_build_object(
+              'id', users.id,
+              'username', posts.user_name,
+              'firstname', users.firstname,
+              'lastname', users.lastname,
+              'profile_name', users.profile_name,
+              'profile_img', users.profile_img
+          ) AS creator, posts.user_id
+          FROM posts
+          JOIN users ON posts.user_name = users.username
+          WHERE posts.user_name = $1
+          ORDER BY posts.date_created ASC`,
+          [user_name]
+        );
+
+        for (let post of posts) {
+          if (!(post.content === null || post.content === '') || !(post.posts_img === null || post.posts_img === '') || !(post.gif === null || post.gif === '')) {
+            if (!allPosts.some((p) => p.id === post.id)) {
+              allPosts.push(post);
+            }
           }
+        }
+      } else {
+
+        const posts = await db.any(
+          `SELECT p.id, p.user_name, p.repost, 
+          json_build_object(
+              'id', p.user_id,
+              'profile_img', u.profile_img,
+              'username', u.username,
+              'profile_name', u.profile_name
+          ) AS creator, 
+          json_build_object(
+              'content', o.content,
+              'posts_img', o.posts_img,
+              'gif', o.gif,
+              'time', to_char(o.date_created, 'MM/DD/YYYY'),
+              'repost_id', p.repost_id
+          ) AS original_content 
+          FROM posts p
+          JOIN users u ON u.id = p.user_id
+          JOIN posts o ON p.repost_id = o.id 
+          WHERE p.user_name = $1;`,
+          [user_name]
+        );
+
+        for (let post of posts) {
+          if (!(post.original_content.content === null || post.original_content.content === '') || !(post.original_content.posts_img === null || post.original_content.posts_img === '') || !(post.original_content.gif === null || post.original_content.gif === '')) {
+            allPosts = allPosts.concat(post);
+          }
+        }
       }
-      return allPosts;
+    }
+    return allPosts;
   } catch (error) {
-      console.error(error);
-      return error;
+    console.error(error);
+    return error;
   }
 };
+
 
 
 
@@ -204,8 +218,8 @@ const createPost = async (post) => {
               }
             }
           }
+          return insertedPost;
         }
-        return insertedPost;
 
       }
 
@@ -287,18 +301,27 @@ const createPost = async (post) => {
 };
 
 
+let executing = false 
 
 const createRepost = async (username , postId, post) => {
 
 try{
-  const addRepost = await db.one(
-    `INSERT INTO posts (user_name, repost_id, user_id, repost) VALUES ($1, $2, $3, $4)`,
-    [username , postId, post.user_id, true]
-  )
-  return addRepost
+  if(!executing ){
+    executing = true
+    const addRepost = await db.one(
+      `INSERT INTO posts (user_name, repost_id, user_id, repost) VALUES ($1, $2, $3, $4)`,
+      [username , postId, post.user_id, true]
+    )
+    executing = false
+    return addRepost
+  }
+  else{
+    return "Alreadyy executing..."
+  }
 }
 catch(error){
   console.log(error)
+  executing = false
   return error
 }
 
