@@ -52,6 +52,7 @@ CREATE TABLE posts (
     gif TEXT,
     repost BOOLEAN,
     repost_id INTEGER,
+    repost_counter INTEGER,
     date_created DATE DEFAULT CURRENT_DATE
 );
 

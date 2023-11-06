@@ -5,7 +5,15 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 
-const {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies, createRepost} = require("../queries/Posts")
+const {getAllPosts,
+     getPost, 
+     createPost,
+      deletePosts,
+       createReaction,
+        getReaction, 
+        getAllUsersReplies,
+         createRepost,
+        editPosts} = require("../queries/Posts")
 
 
 const posts = express.Router({mergeParams: true})
@@ -155,6 +163,16 @@ posts.get("/:id/reactions" , async (req , res) => {
 })
 
 
+
+posts.put("/:id", async (req , res) => {
+
+    const { id } = req.params;
+      
+    const edit = await editPosts(id, req.body);
+
+    res.status(200).json(edit);
+
+})
 
 
 module.exports = posts

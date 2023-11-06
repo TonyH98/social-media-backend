@@ -20,7 +20,7 @@ const getAllPosts = async (user_name) => {
 
       if (check.repost === false) {
         const posts = await db.any(
-          `SELECT  posts.id, posts.content, posts.posts_img, posts.user_name, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT  posts.id, posts.repost_counter, posts.content, posts.posts_img, posts.user_name, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', users.id,
               'username', posts.user_name,
@@ -45,7 +45,7 @@ const getAllPosts = async (user_name) => {
       } else {
 
         const posts = await db.any(
-          `SELECT p.id AS post_id, o.content, p.user_name, o.posts_img, o.gif, p.repost, p.repost_id AS id, to_char(o.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT p.id AS post_id, o.repost_counter, o.content, p.user_name, o.posts_img, o.gif, p.repost, p.repost_id AS id, to_char(o.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', u.id,
               'username', u.username,
@@ -159,8 +159,8 @@ const createPost = async (post) => {
         
 
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-          [post.user_name, postContent, post.user_id, post.posts_img, post.gif, false, null]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+          [post.user_name, postContent, post.user_id, post.posts_img, post.gif, false, null, 0]
         );
 
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -226,8 +226,8 @@ const createPost = async (post) => {
   
       else{
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-          [post.user_name, post.content, post.user_id, post.posts_img, post.gif, false, null]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+          [post.user_name, post.content, post.user_id, post.posts_img, post.gif, false, null, 0]
         );
   
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -399,7 +399,20 @@ const getReaction = async (id) => {
   }
 };
 
-  
+const editPosts = async (id , post) => {
+  try{
+    const edit = await db.one(
+        'UPDATE posts SET repost_counter=$1 WHERE id=$2 RETURNING *',
+        [post.repost_counter, id]
+    )
+    return edit
+}
+catch(error){
+  console.log(error)
+    return error
+}
+}  
+
 
 const getAllUsersReplies = async (userId) => {
   try{
@@ -427,4 +440,12 @@ const getAllUsersReplies = async (userId) => {
       return error
   }
 }
-module.exports = {getAllPosts, getPost, createPost, deletePosts, createReaction, getReaction, getAllUsersReplies, createRepost}
+module.exports = {getAllPosts, 
+  getPost, 
+  createPost, 
+  deletePosts,
+   createReaction,
+    getReaction, 
+    getAllUsersReplies, 
+    createRepost, 
+    editPosts}
