@@ -2,23 +2,19 @@
 const db = require("../db/dbConfig")
 
 
-
-
-
 const getAllPostNotifications = async (user_id) => {
   try {
     const allNote = await db.any(
-      `SELECT notifications.id, notifications.sender_id, notifications.users_id,
-      notifications.posts_id, notifications.is_read, notifications.selected,
+      `SELECT notifications.sender_id AS users_id, posts.content, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+      notifications.posts_id AS id, notifications.is_read, notifications.selected,
       json_build_object(
-          'content' , posts.content,
-          'date_created', to_char(posts.date_created, 'MM/DD/YYYY'),
           'username', users.username,
           'profile_img', users.profile_img,
           'profile_name', users.profile_name,
-          'post_img', posts.posts_img,
+          'posts_img', posts.posts_img,
+          'gif', posts.gif,
           'repost_counter', posts.repost_counter
-      ) AS post_content 
+      ) AS creator
       FROM notifications
       JOIN posts ON posts.id = notifications.posts_id
       JOIN users ON users.id = notifications.sender_id

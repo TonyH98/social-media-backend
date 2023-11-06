@@ -19,24 +19,6 @@ const getAllFavorites = async (userId) => {
              JOIN users f ON f.id = fp.users_id
              WHERE fp.users_id = $1
             `, userId
-            // `SELECT fp.favorites, fp.selected, fp.posts_id, fp.users_id,
-            // json_build_object(
-            //     'creator_id', fp.creator_id,
-            //     'content', p.content,
-            //     'image', p.posts_img,
-            //     'gif', p.gif,
-            //     'repost_counter', p.repost_counter,
-            //     'date_created', to_char(p.date_created, 'MM/DD/YYYY'),
-            //     'profile_img', u.profile_img,
-            //     'username', u.username,
-            //     'profile_name', u.profile_name
-            // ) AS post_creator
-            // FROM favorite_posts fp
-            // JOIN users u ON u.id = fp.creator_id
-            // JOIN posts p ON p.id = fp.posts_id
-            // JOIN users f ON f.id = fp.users_id
-            // WHERE fp.users_id = $1`,
-            // userId
         );
         return favoritesByUser;
     } catch (error) {
