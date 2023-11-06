@@ -33,6 +33,8 @@ const tags =  require("./controller/hashTagsController")
 
 const interest = require("./controller/interestsController")
 
+const block = require("./controller/blockController")
+
 
 app.use("/users", user)
 
@@ -49,6 +51,8 @@ app.use("/search", search)
 app.use("/tags", tags)
 
 app.use("/interests", interest)
+
+app.use("/block", block)
 
 app.get("/", (req , res) => {
     res.send("Welcome to the social media app")

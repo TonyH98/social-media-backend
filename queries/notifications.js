@@ -2,6 +2,7 @@
 const db = require("../db/dbConfig")
 
 
+
 const getAllPostNotifications = async (user_id) => {
   try {
     const allNote = await db.any(

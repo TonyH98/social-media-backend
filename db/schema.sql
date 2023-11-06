@@ -162,3 +162,10 @@ CREATE TABLE users_memberships(
     date_created DATE DEFAULT CURRENT_DATE,
     quantity INTEGER DEFAULT 1
 );
+
+
+DROP TABLE IF EXISTS users_block;
+CREATE TABLE users_block(
+    user_id INTEGER,
+    block_id INTEGER
+)
