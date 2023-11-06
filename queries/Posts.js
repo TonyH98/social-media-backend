@@ -87,7 +87,7 @@ const getAllPosts = async (user_name) => {
 const getPost = async (user_name, id) => {
   try {
       const allPosts = await db.one(
-          `SELECT posts.id, posts.content, posts.posts_img, posts.gif, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost_counter, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', users.id,
               'username', posts.user_name,
@@ -181,6 +181,7 @@ const createPost = async (post) => {
                await sendEmail(user.email, user.firstname);
              }
             }
+
           }
         }
 

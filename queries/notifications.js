@@ -16,7 +16,8 @@ const getAllPostNotifications = async (user_id) => {
           'username', users.username,
           'profile_img', users.profile_img,
           'profile_name', users.profile_name,
-          'post_img', posts.posts_img
+          'post_img', posts.posts_img,
+          'repost_counter', posts.repost_counter
       ) AS post_content 
       FROM notifications
       JOIN posts ON posts.id = notifications.posts_id
