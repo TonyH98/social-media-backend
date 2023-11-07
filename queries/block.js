@@ -16,6 +16,19 @@ const getBlock = async (userId) => {
 };
 
 
+const getUserBlockTheMainuser = async (blockId) => {
+    try {
+        const usersBlock = await db.any(
+            `SELECT user_id FROM users_block WHERE users_block.block_id = $1 `,
+            blockId
+        );
+        return usersBlock ;
+    } catch (error) {
+        console.log(error);
+        return []
+    }
+}
+
 const addBlock = async (userId, blockId) => {
     try {
         const result = await db.tx(async (t) => {
@@ -73,6 +86,6 @@ const removeBlock = async (userId, blockId) => {
 
 
     module.exports={
-        getBlock, addBlock, removeBlock
+        getBlock, addBlock, removeBlock, getUserBlockTheMainuser
     }
     

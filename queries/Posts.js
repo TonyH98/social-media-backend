@@ -52,7 +52,8 @@ const getAllPosts = async (user_name) => {
               'firstname', u.firstname,
               'lastname', u.lastname,
               'profile_name', u.profile_name,
-              'profile_img', u.profile_img
+              'profile_img', u.profile_img,
+              'repost_id', p.repost_id
           ) AS creator, 
           p.user_id
       FROM posts p
