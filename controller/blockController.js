@@ -4,12 +4,12 @@ const { getBlock, addBlock, removeBlock } = require("../queries/block")
 
 const block = express.Router()
 
-block.get("/:userId/block/:blockId", async (req , res) =>{
+block.get("/:userId", async (req , res) =>{
     
-    const {userId , blockId} = req.params
+    const {userId} = req.params
     
     try{
-        const block = await getBlock(userId , blockId)
+        const block = await getBlock(userId)
         res.json(block)
     }
     catch(error){
