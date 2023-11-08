@@ -1,6 +1,10 @@
 
 const db = require("../db/dbConfig")
 
+const nodemailer = require('nodemailer')
+
+const password = process.env.Email_Password
+
 
 const getBlock = async (userId) => {
     try {
@@ -29,6 +33,30 @@ const getUserBlockTheMainuser = async (blockId) => {
     }
 }
 
+
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'tonyhoangtesting@gmail.com',
+      pass: password
+    }
+  });
+
+
+  async function sendEmail(toEmail, firstName, username) {
+    const info = await transporter.sendMail({
+      from: 'Tony Hoang <tonyhoangtesting@gmail.com>',
+      to: toEmail,
+      subject: "Block",
+      text: `Hello, ${firstName} \n @${username} has blocked you.`
+    });
+  
+    console.log("Message sent: " + info.messageId);
+  }
+
+
 const addBlock = async (userId, blockId) => {
     try {
         const result = await db.tx(async (t) => {
@@ -39,18 +67,13 @@ const addBlock = async (userId, blockId) => {
 
             try {
                 await t.manyOrNone(
-                    `DELETE FROM favorite_posts WHERE 
+                    `DELETE FROM favorite WHERE 
                     (users_id = $1 AND creator_id = $2) OR 
                     (users_id = $2 AND creator_id = $1)`,
                     [userId, blockId]
                 );
 
-                await t.manyOrNone(
-                    `DELETE FROM favorite_replies WHERE 
-                    (users_id = $1 AND creator_id = $2) OR 
-                    (users_id = $2 AND creator_id = $1)`,
-                    [userId, blockId]
-                );
+                
                 await t.manyOrNone(
                     `DELETE FROM post_reactions WHERE (user_id = $1 AND creator_id = $2) OR 
                     (user_id = $2 AND creator_id = $1)`,
@@ -61,6 +84,20 @@ const addBlock = async (userId, blockId) => {
                     (user_id = $2 AND creator_id = $1)`,
                     [userId, blockId]
                 )
+               
+                const blockUser = await db.one(
+                    `SELECT firstname, email, notifications FROM users WHERE id = $1`,
+                    [blockId]
+                )
+
+                const user = await db.one(
+                    `SELECT username FROM users WHERE id = $1`,
+                    [userId]
+                )
+
+                if(blockUser.notifications){
+                    await sendEmail(blockUser.email, blockUser.firstname, user.username)
+                }
             
             } catch (error) {
                 console.log(error);

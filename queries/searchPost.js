@@ -4,7 +4,9 @@ const searchPost = async (tagName) => {
   try {
     const search = await db.any(
 
-      `SELECT ph.post_id AS id, ph.user_id, ph.reply_id, ph.hashtag_id, p.user_name, p.content, p.posts_img, p.gif, h.tag_names,
+      `SELECT ph.post_id AS id, ph.user_id,
+       ph.reply_id, ph.hashtag_id, p.user_name,
+        p.content, p.posts_img, p.gif, h.tag_names,
       to_char(p.date_created, 'MM/DD/YYYY') AS time, 
       json_build_object(
            'username', p.user_name,
@@ -54,6 +56,9 @@ const searchReply = async (tagName) => {
     return error;
   }
 };
+
+
+
 
 
   module.exports = {searchPost , searchReply}

@@ -106,23 +106,17 @@ CREATE TABLE post_hashtags (
 
 
 
-DROP TABLE IF EXISTS favorite_posts;
-CREATE TABLE favorite_posts(
+DROP TABLE IF EXISTS favorite;
+CREATE TABLE favorite(
+    id SERIAL PRIMARY KEY,
     favorites BOOLEAN DEFAULT TRUE,
     selected BOOLEAN DEFAULT FALSE,
     users_id INTEGER REFERENCES users(id),
     creator_id INTEGER,
-    posts_id INTEGER
-);
-
-DROP TABLE IF EXISTS favorite_replies;
-CREATE TABLE favorite_replies(
-    favorites BOOLEAN DEFAULT TRUE,
-    selected BOOLEAN DEFAULT FALSE,
-    users_id INTEGER REFERENCES users(id),
-    creator_id INTEGER,
+    posts_id INTEGER,
     reply_id INTEGER
 );
+
 
 DROP TABLE IF EXISTS users_followers;
 CREATE TABLE users_followers(
