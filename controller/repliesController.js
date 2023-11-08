@@ -70,9 +70,9 @@ reply.delete("/:id", async (req , res) => {
 reply.post("/:userId/reactR/:replyId", async (req , res) => {
   try{
       const { userId, replyId} = req.params;
-      const reaction = req.body.reaction; 
+      const { reaction, creator_id } = req.body; 
 
-      const createReactions = await createReactionR(reaction, userId, replyId);
+      const createReactions = await createReactionR(reaction, creator_id, userId, replyId);
 
       res.json(createReactions);
   }

@@ -56,6 +56,11 @@ const addBlock = async (userId, blockId) => {
                     (user_id = $2 AND creator_id = $1)`,
                     [userId, blockId]
                 )
+                await t.manyOrNone(
+                    `DELETE FROM reply_reactions WHERE (user_id = $1 AND creator_id = $2) OR 
+                    (user_id = $2 AND creator_id = $1)`,
+                    [userId, blockId]
+                )
             
             } catch (error) {
                 console.log(error);
