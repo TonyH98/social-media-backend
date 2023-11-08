@@ -342,7 +342,7 @@ const deletePosts = async (id) => {
     }
 }
 
-const createReaction = async (react, userId, postId) => {
+const createReaction = async (react, creatorId, userId, postId) => {
   try {
     const existing = await db.oneOrNone(
       `SELECT reaction_type FROM post_reactions
@@ -359,23 +359,24 @@ const createReaction = async (react, userId, postId) => {
     } else {
       // Insert a new reaction
       await db.none(
-        `INSERT INTO post_reactions (user_id, post_id, reaction_type)
-         VALUES ($1, $2, $3)`,
-        [userId, postId, react]
+        `INSERT INTO post_reactions (user_id, post_id, reaction_type, creator_id)
+         VALUES ($1, $2, $3, $4)`,
+        [userId, postId, react, creatorId]
       );
     }
     return true;
   } catch (error) {
-    console.log(error);
-    return error;
+    console.error(error);
+    throw error;
   }
 };
+
 
 
 const getReaction = async (id) => {
   try {
    const reactions = await db.any(
-     'SELECT user_id, reaction_type FROM post_reactions WHERE post_id = $1',
+     'SELECT user_id, creator_id, reaction_type FROM post_reactions WHERE post_id = $1',
      [id]
    )
 
@@ -385,12 +386,15 @@ const getReaction = async (id) => {
    const likeId = likes.map((like) => like.user_id)
    const dislikeId = dislikes.map((dislike) => dislike.user_id)
 
+   const creatorId = reactions.length > 0 ? reactions[0].creator_id : null;
+  
    const result = {
     likes: likes.length,
     dislikes: dislikes.length,
     likeId,
     dislikeId,
-    post_id: id
+    post_id: id,
+    creator_id: creatorId
   };
    return result 
 

@@ -130,20 +130,20 @@ posts.delete("/:id", async (req , res) => {
     }
 })
 
-posts.post("/:userId/react/:postId", async (req , res) => {
-    try{
-        const { userId, postId } = req.params;
-        const reaction = req.body.reaction; 
-
-        const createReactions = await createReaction(reaction, userId, postId);
-
-        res.json(createReactions);
+posts.post("/:userId/react/:postId", async (req, res) => {
+    try {
+      const { userId, postId } = req.params;
+      const { reaction, creator_id } = req.body; 
+      console.log(creator_id, userId, postId, reaction)
+      const createReactions = await createReaction(reaction, creator_id, userId, postId);
+  
+      res.json(createReactions);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "An error occurred." });
     }
-    catch(error){
-        console.log(error);
-        res.status(500).json({ error: "An error occurred." });
-    }
-});
+  });
+  
 
 
 

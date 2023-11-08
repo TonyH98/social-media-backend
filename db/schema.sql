@@ -72,7 +72,7 @@ DROP TABLE IF EXISTS post_reactions;
 CREATE TABLE post_reactions (
     user_id INTEGER REFERENCES users(id),
     post_id INTEGER REFERENCES posts(id),
-    post_username TEXT REFERENCES users(username),
+    creator_id INTEGER,
     reaction_type VARCHAR(10) CHECK (reaction_type IN ('like', 'dislike'))
 );
 
