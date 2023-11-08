@@ -1,6 +1,6 @@
 const express = require("express")
 
-const  {getAllPostNotifications, deleteNotifications, getAllReplyNotifications} = require("../queries/notifications")
+const  {getAllPostNotifications, deleteNotifications, getAllReplyNotifications, editNotifications, getAllNotifiacions} = require("../queries/notifications")
 
 
 
@@ -48,6 +48,28 @@ note.get("/:id/reply", async(req , res) => {
     }
 
 
+})
+
+
+note.put("/:id", async (req , res) => {
+    const { id } = req.params;
+      
+    const edit = await editNotifications(req.body , id);
+
+    res.status(200).json(edit)
+})
+
+note.get("/:id", async (req , res) => {
+    const {id} = req.params
+    console.log(id)
+    try{
+        const allNote = await getAllNotifiacions(id)
+
+        res.json(allNote)
+    }
+    catch(error){
+        res.json(error)
+    }
 })
 
 module.exports = note
