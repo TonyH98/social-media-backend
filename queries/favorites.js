@@ -166,7 +166,7 @@ const addFavoritesReplies = async (userId, replyId, fav) => {
                     const allFav = await db.any(
 
                         `SELECT fp.id AS fav_id, fp.posts_id AS id, fp.selected, p.content, p.gif, p.posts_img, p.user_name,
-                        p.repost_counter, to_char(p.date_created, 'MM/DD/YYYY') AS time,
+                        p.repost_counter, to_char(p.date_created, 'MM/DD/YYYY') AS time, fp.posts_id, fp.reply_id,
                         json_build_object(
                             'id', fp.creator_id,
                             'username', u.username,
@@ -187,7 +187,7 @@ const addFavoritesReplies = async (userId, replyId, fav) => {
                 }
                 else{
                     const allFav = await db.any(
-                        `SELECT fr.id AS fav_id, fr.reply_id AS id, fr.users_id, r.content,
+                        `SELECT fr.id AS fav_id, fr.reply_id AS id, fr.users_id, r.content, fr.posts_id, fr.reply_id,
                         r.posts_img, r.gif, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_id AS origin_id,
                         json_build_object(
                             'id', fr.creator_id,
