@@ -98,6 +98,7 @@ CREATE TABLE reply_reactions (
 
 DROP TABLE IF EXISTS post_hashtags;
 CREATE TABLE post_hashtags (
+    id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     post_id INTEGER REFERENCES posts(id),
     reply_id INTEGER REFERENCES replies(id),
