@@ -84,6 +84,12 @@ const addBlock = async (userId, blockId) => {
                     (user_id = $2 AND creator_id = $1)`,
                     [userId, blockId]
                 )
+                    
+                await t.manyOrNone(
+                    `DELETE FROM notifications WHERE (users_id = $1 AND sender_id = $2) OR
+                    (users_id = $2 AND sender_id =$1)`,
+                    [userId, blockId]
+                )
                
                 const blockUser = await db.one(
                     `SELECT firstname, email, notifications FROM users WHERE id = $1`,

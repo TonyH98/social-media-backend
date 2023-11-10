@@ -53,6 +53,7 @@ CREATE TABLE posts (
     repost BOOLEAN,
     repost_id INTEGER,
     repost_counter INTEGER,
+    pin BOOLEAN,
     date_created DATE DEFAULT CURRENT_DATE
 );
 
@@ -63,9 +64,6 @@ CREATE TABLE hashtags(
     tag_names TEXT,
     CONSTRAINT unique_tag_name UNIQUE (tag_names)
 );
-
-
-
 
 
 DROP TABLE IF EXISTS post_reactions;
@@ -87,6 +85,7 @@ CREATE TABLE replies(
     gif Text,
     date_created DATE DEFAULT CURRENT_DATE
 );
+
 
 DROP TABLE IF EXISTS reply_reactions;
 CREATE TABLE reply_reactions (

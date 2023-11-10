@@ -20,7 +20,8 @@ const getAllPosts = async (user_name) => {
 
       if (check.repost === false) {
         const posts = await db.any(
-          `SELECT  posts.id, posts.repost_counter, posts.content, posts.posts_img, posts.user_name, posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT  posts.id, posts.repost_counter, posts.pin, posts.content, posts.posts_img, posts.user_name, 
+          posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', users.id,
               'username', posts.user_name,
@@ -31,7 +32,8 @@ const getAllPosts = async (user_name) => {
           ) AS creator, posts.user_id
           FROM posts
           JOIN users ON posts.user_name = users.username
-          WHERE posts.user_name = $1`,
+          WHERE posts.user_name = $1
+          ORDER BY posts.pin DESC, posts.date_created DESC`,
           [user_name]
         );
 
@@ -45,7 +47,9 @@ const getAllPosts = async (user_name) => {
       } else {
 
         const posts = await db.any(
-          `SELECT p.id AS post_id, o.repost_counter, o.content, p.user_name, o.posts_img, o.gif, p.repost, p.repost_id AS id, to_char(o.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT p.id AS post_id, o.repost_counter, o.content, p.user_name, 
+          o.posts_img, o.gif, p.repost, p.repost_id AS id, 
+          to_char(o.date_created, 'MM/DD/YYYY') AS time,
           json_build_object(
               'id', u.id,
               'username', u.username,
@@ -59,7 +63,7 @@ const getAllPosts = async (user_name) => {
       FROM posts p
       JOIN users u ON u.id = p.user_id
       JOIN posts o ON p.repost_id = o.id 
-      WHERE p.user_name = $1;`,
+      WHERE p.user_name = $1`,
       [user_name]
       );
 
@@ -160,8 +164,8 @@ const createPost = async (post) => {
         
 
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-          [post.user_name, postContent, post.user_id, post.posts_img, post.gif, false, null, 0]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+          [post.user_name, postContent, post.user_id, post.posts_img, post.gif, false, null, 0, false]
         );
 
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -228,8 +232,8 @@ const createPost = async (post) => {
   
       else{
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-          [post.user_name, post.content, post.user_id, post.posts_img, post.gif, false, null, 0]
+          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+          [post.user_name, post.content, post.user_id, post.posts_img, post.gif, false, null, 0, false]
         );
   
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -349,15 +353,13 @@ const createReaction = async (react, creatorId, userId, postId) => {
       WHERE user_id = $1 AND post_id = $2`,
       [userId, postId]
     );
-
+    console.log(existing)
     if (existing) {
-      // Delete the reaction
       await db.none(
         `DELETE FROM post_reactions WHERE user_id = $1 AND post_id = $2`,
         [userId, postId]
       );
     } else {
-      // Insert a new reaction
       await db.none(
         `INSERT INTO post_reactions (user_id, post_id, reaction_type, creator_id)
          VALUES ($1, $2, $3, $4)`,
@@ -405,19 +407,31 @@ const getReaction = async (id) => {
   }
 };
 
-const editPosts = async (id , post) => {
-  try{
+const editPosts = async (id, post) => {
+  try {
+    const getUsersPost = await db.oneOrNone(
+      'SELECT id FROM posts WHERE pin = $1 AND user_name = $2',
+      [true, post.username]
+    );
+
+    if (getUsersPost) {
+      await db.one(
+        'UPDATE posts SET pin=$1 WHERE id=$2 RETURNING *',
+        [false, getUsersPost.id]
+      );
+    }
     const edit = await db.one(
-        'UPDATE posts SET repost_counter=$1 WHERE id=$2 RETURNING *',
-        [post.repost_counter, id]
-    )
-    return edit
-}
-catch(error){
-  console.log(error)
-    return error
-}
-}  
+      'UPDATE posts SET repost_counter=$1, pin=$2 WHERE id=$3 RETURNING *',
+      [post.repost_counter, post.pin, id]
+    );
+
+    return edit;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
 
 
 const getAllUsersReplies = async (userId) => {

@@ -1,7 +1,5 @@
 const db = require("../db/dbConfig")
 
-
-
 const getAllFollowing = async (userId) => {
     try{
         const getFollowers = await db.any(
@@ -20,11 +18,6 @@ const getAllFollowing = async (userId) => {
         return error
     }
   }
-
-
-
-
-
 
 
   const getAllFollowers = async (userId) => {
@@ -46,6 +39,7 @@ const getAllFollowing = async (userId) => {
       }
   }
 
+  
 const addFollowingToUser = async (userId, followId) => {
     try {
       const add = await db.none(

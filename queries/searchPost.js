@@ -75,7 +75,7 @@ try{
           const search = await db.any(
             `SELECT ph.id AS search_id, ph.post_id AS id, ph.user_id,
              ph.reply_id, ph.hashtag_id, p.user_name,
-              p.content, p.posts_img, p.gif, h.tag_names,
+              p.content, p.posts_img, p.gif, p.repost_counter, h.tag_names, ph.post_id AS posts_id,
             to_char(p.date_created, 'MM/DD/YYYY') AS time, 
             json_build_object(
                  'username', p.user_name,
@@ -100,13 +100,14 @@ try{
         else{
           const search = await db.any(`
           SELECT ph.id AS search_id, ph.reply_id AS id, ph.user_id, ph.hashtag_id,
-          h.tag_names, r.content, r.gif, r.posts_img, u.username, r.posts_id,
-         to_char(r.date_created, 'MM/DD/YYYY') AS time,
+          h.tag_names, r.content, r.gif, r.posts_img, u.username, 
+         to_char(r.date_created, 'MM/DD/YYYY') AS time, ph.reply_id,
           json_build_object(
             'username', u.username,
             'profile_name', u.profile_name,
             'profile_img', u.profile_img,
-            'id', u.id
+            'id', u.id,
+            'posts_id', r.posts_id
           ) as creator
           FROM post_hashtags ph
           JOIN replies r ON r.id = ph.reply_id
