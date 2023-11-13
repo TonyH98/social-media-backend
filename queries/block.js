@@ -90,6 +90,12 @@ const addBlock = async (userId, blockId) => {
                     (users_id = $2 AND sender_id =$1)`,
                     [userId, blockId]
                 )
+
+                   await t.manyOrNone(
+                    `DELETE FROM users_followers WHERE (user_id = $1 AND following_id = $2) OR
+                    (user_id = $2 AND following_id =$1)`,
+                    [userId, blockId]
+                )
                
                 const blockUser = await db.one(
                     `SELECT firstname, email, notifications FROM users WHERE id = $1`,
