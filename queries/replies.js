@@ -9,7 +9,8 @@ const axios = require('axios')
 const getReplies = async (postId) => {
     try{
         const allReplies = await db.any(
-            `SELECT r.id, r.posts_id, r.content, r.gif, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_img,
+            `SELECT r.id, r.posts_id, r.content, r.gif, to_char(r.date_created, 'MM/DD/YYYY') AS time, 
+            r.posts_img, r.url, r.url_title, r.url_img,
             json_build_object(
                 'id', r.user_id,
                 'username', users.username,
@@ -77,18 +78,17 @@ const createReply = async (post) => {
             const companyName = $('meta[property="og:site_name"]').attr('content');
     
     
-            const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" width="400" height="300" /></a>`;
+            
     
     
             const postContentWithoutUrl = post.content.replace(articleUrl, '');
             
          
-            const postContent = `${postContentWithoutUrl}\n${embeddedImage}\n
-            ${articleTitle}\n\nCompany: ${companyName}`;
+            const postContent = `${postContentWithoutUrl}`;
 
             const insertedPost = await t.one(
-              'INSERT INTO replies (posts_id, user_id, content, posts_img, gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-              [post.posts_id , post.user_id, postContent, post.posts_img, post.gif]
+              'INSERT INTO replies (posts_id, user_id, content, posts_img, gif, url, url_img, url_title) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+              [post.posts_id , post.user_id, postContent, post.posts_img, post.gif, articleUrl, articleImage, articleTitle]
             );
 
             const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -151,8 +151,8 @@ const createReply = async (post) => {
           
            else{
             const insertedPost = await t.one(
-              'INSERT INTO replies (posts_id, user_id, content, posts_img, gif) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-              [post.posts_id , post.user_id, post.content, post.posts_img, post.gif]
+              'INSERT INTO replies (posts_id, user_id, content, posts_img, gif, url, url_img, url_title) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+              [post.posts_id , post.user_id, postContent, post.posts_img, post.gif, null , null , null]
             );
 
             const mentionedUsers = post.content.match(/@(\w+)/g);

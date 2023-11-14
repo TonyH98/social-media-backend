@@ -86,6 +86,9 @@ CREATE TABLE replies(
     content VARCHAR(500),
     posts_img TEXT,
     gif Text,
+    url TEXT,
+    url_img TEXT,
+    url_title TEXT,
     date_created DATE DEFAULT CURRENT_DATE
 );
 
