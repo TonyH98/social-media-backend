@@ -152,7 +152,7 @@ const createReply = async (post) => {
            else{
             const insertedPost = await t.one(
               'INSERT INTO replies (posts_id, user_id, content, posts_img, gif, url, url_img, url_title) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-              [post.posts_id , post.user_id, postContent, post.posts_img, post.gif, null , null , null]
+              [post.posts_id , post.user_id, post.content, post.posts_img, post.gif, null , null , null]
             );
 
             const mentionedUsers = post.content.match(/@(\w+)/g);

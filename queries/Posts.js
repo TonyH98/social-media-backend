@@ -50,8 +50,8 @@ const getAllPosts = async (user_name) => {
         const posts = await db.any(
           `SELECT p.id AS post_id, o.repost_counter, o.content, p.user_name, 
           o.posts_img, o.gif, p.repost, p.repost_id AS id, 
-          to_char(o.date_created, 'MM/DD/YYYY') AS time, p.url_img,
-          p.url_title, p.url,
+          to_char(o.date_created, 'MM/DD/YYYY') AS time, o.url_img,
+          o.url_title, o.url,
           json_build_object(
               'id', u.id,
               'username', u.username,
@@ -441,7 +441,7 @@ const editPosts = async (id, post) => {
 const getAllUsersReplies = async (userId) => {
   try{
       const allReplies = await db.any(
-          `SELECT r.id, r.posts_id, r.content, r.gif, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_img,
+          `SELECT r.id, r.posts_id, r.content, r.gif, to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_img, r.url, r.url_title, r.url_img,
           json_build_object(
               'id', r.user_id,
               'username', users.username,

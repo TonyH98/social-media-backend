@@ -6,8 +6,10 @@ const db = require("../db/dbConfig")
 const getAllPostNotifications = async (user_id) => {
   try {
     const allNote = await db.any(
-      `SELECT notifications.id AS note_id, notifications.sender_id AS users_id, posts.content, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
-      notifications.posts_id AS id, notifications.reply_id, notifications.is_read, notifications.selected,
+      `SELECT notifications.id AS note_id, notifications.sender_id AS users_id,
+       posts.content, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+      notifications.posts_id AS id, notifications.reply_id, 
+      notifications.is_read, notifications.selected,
       json_build_object(
           'username', users.username,
           'profile_img', users.profile_img,

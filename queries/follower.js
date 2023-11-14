@@ -20,6 +20,32 @@ const getAllFollowing = async (userId) => {
   }
 
 
+  const getAllFollowPosts = async(userId) => {
+    try{
+      const getFollowersPost = await db.any(
+          `SELECT uf.follow, uf.selected, uf.user_id, p.content, 
+          p.gif, p.posts_img, p.url, p.url_title, p.url_img, p.id,
+          to_char(p.date_created, 'MM/DD/YYYY') AS time, p.repost_counter,
+          json_build_object(
+            'id', uf.following_id,
+            'username', f.username,
+            'profile_name', f.profile_name,
+            'profile_img', f.profile_img
+          ) As creator
+          FROM users_followers uf
+          JOIN users u ON u.id = uf.user_id
+          JOIN users f ON f.id = uf.following_id
+          JOIN posts p ON p.user_id = uf.following_id
+          WHERE uf.user_id = $1`,
+          userId
+      )
+      return getFollowersPost
+  }
+  catch(error){
+      console.log(error)
+      return error
+  }
+  }
   
 
   const getAllFollowers = async (userId) => {
@@ -68,4 +94,8 @@ const addFollowingToUser = async (userId, followId) => {
 
 
 
-  module.exports={getAllFollowing, addFollowingToUser, deletePersonFromUsers, getAllFollowers}
+  module.exports={getAllFollowing,
+    addFollowingToUser, 
+    deletePersonFromUsers, 
+    getAllFollowers,
+    getAllFollowPosts}

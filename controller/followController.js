@@ -1,6 +1,7 @@
 const express = require("express")
 
-const{getAllFollowing, addFollowingToUser, deletePersonFromUsers, getAllFollowers} = require("../queries/follower")
+const{getAllFollowing, addFollowingToUser, 
+  deletePersonFromUsers, getAllFollowers, getAllFollowPosts} = require("../queries/follower")
 
 const follow = express.Router()
 
@@ -11,6 +12,20 @@ follow.get("/:userId", async(req , res) => {
     try{
         const allFollowing = await getAllFollowing(userId)
         res.json(allFollowing)
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+})
+
+
+follow.get(`/:userId/posts`, async(req ,res) => {
+  const {userId} = req.params
+
+    try{
+        const allPosts = await getAllFollowPosts(userId)
+        res.json(allPosts)
     }
     catch(error){
         console.log(error)
