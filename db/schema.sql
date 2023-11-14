@@ -53,6 +53,9 @@ CREATE TABLE posts (
     repost BOOLEAN,
     repost_id INTEGER,
     repost_counter INTEGER,
+    url TEXT,
+    url_img TEXT,
+    url_title TEXT,
     pin BOOLEAN,
     date_created DATE DEFAULT CURRENT_DATE
 );

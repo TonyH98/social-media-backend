@@ -21,7 +21,8 @@ const getAllPosts = async (user_name) => {
       if (check.repost === false) {
         const posts = await db.any(
           `SELECT  posts.id, posts.repost_counter, posts.pin, posts.content, posts.posts_img, posts.user_name, 
-          posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          posts.gif, posts.repost, posts.repost_id, to_char(posts.date_created, 'MM/DD/YYYY') AS time, posts.url_img,
+          posts.url_title, posts.url,
           json_build_object(
               'id', users.id,
               'username', posts.user_name,
@@ -49,7 +50,8 @@ const getAllPosts = async (user_name) => {
         const posts = await db.any(
           `SELECT p.id AS post_id, o.repost_counter, o.content, p.user_name, 
           o.posts_img, o.gif, p.repost, p.repost_id AS id, 
-          to_char(o.date_created, 'MM/DD/YYYY') AS time,
+          to_char(o.date_created, 'MM/DD/YYYY') AS time, p.url_img,
+          p.url_title, p.url,
           json_build_object(
               'id', u.id,
               'username', u.username,
@@ -92,7 +94,9 @@ const getAllPosts = async (user_name) => {
 const getPost = async (user_name, id) => {
   try {
       const allPosts = await db.one(
-          `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost_counter, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+          `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost_counter,
+           to_char(posts.date_created, 'MM/DD/YYYY') AS time, posts.url_img,
+           posts.url_title, posts.url,
           json_build_object(
               'id', users.id,
               'username', posts.user_name,
@@ -153,19 +157,17 @@ const createPost = async (post) => {
         const companyName = $('meta[property="og:site_name"]').attr('content');
 
         
-        const embeddedImage = `<a href="${articleUrl}" target="_blank"><img src="${articleImage}" alt="${articleTitle}" width="400" height="300" /></a>`;
-        
-
         const postContentWithoutUrl = post.content.replace(articleUrl, '');
         
      
-        const postContent = `${postContentWithoutUrl}\n${embeddedImage}\n
-        ${articleTitle}\n\nCompany: ${companyName}`;
+        const postContent = `${postContentWithoutUrl}`;
         
 
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-          [post.user_name, postContent, post.user_id, post.posts_img, post.gif, false, null, 0, false]
+          `INSERT INTO posts
+           (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin, url, url_img, url_title)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+          [post.user_name, postContent, post.user_id, post.posts_img, post.gif, false, null, 0, false, articleUrl, articleImage, articleTitle]
         );
 
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -232,8 +234,10 @@ const createPost = async (post) => {
   
       else{
         const insertedPost = await t.one(
-          'INSERT INTO posts (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-          [post.user_name, post.content, post.user_id, post.posts_img, post.gif, false, null, 0, false]
+          `INSERT INTO posts
+           (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin, url, url_img, url_title)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+          [post.user_name, post.content, post.user_id, post.posts_img, post.gif, false, null, 0, false, null, null, null]
         );
   
         const mentionedUsers = post.content.match(/@(\w+)/g);
