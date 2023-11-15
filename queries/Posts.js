@@ -95,7 +95,7 @@ const getPost = async (user_name, id) => {
   try {
       const allPosts = await db.one(
           `SELECT posts.id, posts.content, posts.posts_img, posts.gif, posts.repost_counter,
-           to_char(posts.date_created, 'MM/DD/YYYY') AS time, posts.url_img,
+           to_char(posts.date_created, 'MM/DD/YYYY') AS time, posts.url_img, posts.pin,
            posts.url_title, posts.url,
           json_build_object(
               'id', users.id,
