@@ -46,6 +46,33 @@ const getAllFollowing = async (userId) => {
       return error
   }
   }
+
+  const getAllFollowReplies = async(userId) => {
+    try{
+      const getFollowersPost = await db.any(
+          `SELECT uf.follow, uf.selected, uf.user_id, r.content, 
+          r.gif, r.posts_img, r.url, r.url_title, r.url_img, r.id,
+          to_char(r.date_created, 'MM/DD/YYYY') AS time, r.posts_id,
+          json_build_object(
+            'id', uf.following_id,
+            'username', f.username,
+            'profile_name', f.profile_name,
+            'profile_img', f.profile_img
+          ) As creator
+          FROM users_followers uf
+          JOIN users u ON u.id = uf.user_id
+          JOIN users f ON f.id = uf.following_id
+          JOIN replies r ON r.user_id = uf.following_id
+          WHERE uf.user_id = $1`,
+          userId
+      )
+      return getFollowersPost
+  }
+  catch(error){
+      console.log(error)
+      return error
+  }
+  }
   
 
   const getAllFollowers = async (userId) => {
@@ -98,4 +125,5 @@ const addFollowingToUser = async (userId, followId) => {
     addFollowingToUser, 
     deletePersonFromUsers, 
     getAllFollowers,
-    getAllFollowPosts}
+    getAllFollowPosts,
+    getAllFollowReplies}

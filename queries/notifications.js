@@ -9,7 +9,7 @@ const getAllPostNotifications = async (user_id) => {
       `SELECT notifications.id AS note_id, notifications.sender_id AS users_id,
        posts.content, to_char(posts.date_created, 'MM/DD/YYYY') AS time,
       notifications.posts_id AS id, notifications.reply_id, 
-      notifications.is_read, notifications.selected,
+      notifications.is_read, notifications.selected, posts.url, posts.url_title, posts.url_img, 
       json_build_object(
           'username', users.username,
           'profile_img', users.profile_img,
@@ -37,7 +37,8 @@ const getAllReplyNotifications = async (user_id) => {
     try{
         const allNote = await db.any(
             `SELECT notifications.id, notifications.sender_id, notifications.users_id,
-            notifications.reply_id, notifications.is_read, notifications.selected,
+            notifications.reply_id, notifications.is_read, notifications.selected, replies.url, replies.url_img, 
+            replies.url_title,
             json_build_object(
                 'content', replies.content,
                 'date_created', to_char(replies.date_created, 'MM/DD/YYYY'),
@@ -74,8 +75,9 @@ const getAllNotifiacions = async (user_id) => {
         for(let note of getAllNote){
             if(note.posts_id){
                 const allNote = await db.any(
-                    `SELECT notifications.id AS note_id, notifications.sender_id AS users_id, posts.content, notifications.reply_id,
-                    to_char(posts.date_created, 'MM/DD/YYYY') AS time,
+                    `SELECT notifications.id AS note_id, notifications.sender_id AS users_id,
+                     posts.content, notifications.reply_id, 
+                    to_char(posts.date_created, 'MM/DD/YYYY') AS time, posts.url, posts.url_title, posts.url_img, 
                     notifications.posts_id AS id, notifications.is_read, notifications.selected,
                     json_build_object(
                         'username', users.username,
@@ -100,7 +102,8 @@ const getAllNotifiacions = async (user_id) => {
             else{
                 const allNote = await db.any(
                     `SELECT notifications.id AS note_id, notifications.sender_id AS users_id, replies.content,
-                    to_char(replies.date_created, 'MM/DD/YYYY') AS time,
+                    to_char(replies.date_created, 'MM/DD/YYYY') AS time, replies.url, replies.url_img, 
+                    replies.url_title,
                     notifications.reply_id AS id, notifications.is_read, notifications.selected,notifications.reply_id,
                     json_build_object(
                         'username', users.username,
