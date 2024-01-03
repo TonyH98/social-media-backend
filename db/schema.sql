@@ -176,5 +176,15 @@ CREATE TABLE polls(
     question VARCHAR(255) NOT NULL,
     options JSONB NOT NULL,
     user_id INTEGER REFERENCES users(id),
-    date_created DATE DEFAULT CURRENT_DATE
+    date_created DATE DEFAULT CURRENT_DATE,
+    expiry_date DATE
+)
+
+DROP TABLE IF EXISTS poll_votes
+CREATE TABLE poll_votes(
+    poll_id INTEGER REFERENCES polls(id),
+    user_id INTEGER REFERENCES users(id),
+    selected_option INTEGER,
+    vote_date DATE DEFAULT CURRENT_DATE,
+    PRIMARY KEY (poll_id, user_id)
 )
