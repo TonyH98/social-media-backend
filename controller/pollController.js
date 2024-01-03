@@ -3,7 +3,6 @@ const express = require("express")
 const { getPolls,
         getPoll,
         createPoll,
-        votePoll,
         checkVote} = require("../queries/polls")
 
 const poll = express.Router()
@@ -38,10 +37,10 @@ poll.post("/", async (req , res) => {
  })
 
 
-poll.put("/:id", async (req , res) => {
-    const { id } = req.params;
+poll.put("/:pollId/check/:userId", async (req , res) => {
+    const { pollId , userId} = req.params;
       
-    const vote= await votePoll(id);
+    const vote= await checkVote(pollId , userId, req.body);
 
     res.status(200).json(vote);
 })
