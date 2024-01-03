@@ -169,3 +169,12 @@ CREATE TABLE users_block(
     user_id INTEGER,
     block_id INTEGER
 )
+
+DROP TABLE IF EXISTS polls
+CREATE TABLE polls(
+    id SERIAL PRIMARY KEY, 
+    question VARCHAR(255) NOT NULL,
+    options JSONB NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+    date_created DATE DEFAULT CURRENT_DATE
+)

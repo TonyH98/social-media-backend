@@ -58,7 +58,7 @@ const transporter = nodemailer.createTransport({
 
 
 const addBlock = async (userId, blockId) => {
-    try {
+         try {
         const result = await db.tx(async (t) => {
             const insertBlock = await db.none(
                 `INSERT INTO users_block (user_id, block_id) VALUES ($1, $2)`,

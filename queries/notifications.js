@@ -172,4 +172,9 @@ const editNotifications = async (note, id) => {
 };
 
 
-module.exports = {getAllPostNotifications, deleteNotifications, getAllReplyNotifications, editNotifications, getAllNotifiacions}
+module.exports = 
+    {getAllPostNotifications,
+     deleteNotifications, 
+     getAllReplyNotifications, 
+     editNotifications, 
+     getAllNotifiacions}
