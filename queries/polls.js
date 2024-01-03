@@ -40,8 +40,12 @@ const createPoll = async (poll) => {
     }
 }
 
-const votePoll = async (pollId) => {
+const votePoll = async (pollId , userId, selectedOption) => {
     try{
+        await db.one(
+            `INSERT INTO poll_votes (poll_id , user_id , selected_option) VALUES ($1, $2, $3, CURRENT_DATE)`,
+            [pollId, userId, selectedOption]
+        )
         const updatePoll = await db.one(
             'UPDATE polls SET options = jsonb_set(options, \'{values, 0, count}\', (COALESCE(options->\'values\'->0->>\'count\', \'0\')::INT + 1)::TEXT::JSONB) WHERE id = $1 RETURNING *',
             [pollId]
@@ -54,9 +58,48 @@ const votePoll = async (pollId) => {
     }
 }
 
+
+
+const checkVote = async (pollId, userId, selectedOption) => {
+    try{
+        const existingVote = await db.oneOrNone(
+            `SELECTED FROM poll_votes WHERE poll_id = $1 AND user_id = $2`,
+            [pollId, userId]
+        )
+        if(existingVote){
+            await db.one(
+                `UPDATE poll_votes SET selected_option = $1, 
+                vote_date = CURRENT_DATE WHERE poll_id = $2 
+                AND user_id = $3`,
+                [selectedOption , pollId, userId]
+
+            )
+        }
+        else{
+            await db.none(
+                `INSERT INTO poll_votes
+                 (poll_id, user_id, selected_option, vote_date)
+                  VALUES ($1, $2, $3, CURRENT_DATE)`,
+                [pollId, userId, selectedOption]
+            );
+        }
+        const updatedPoll = await db.one(
+            'UPDATE polls SET options = jsonb_set(options, \'{values, 0, count}\', (COALESCE(options->\'values\'->0->>\'count\', \'0\')::INT + 1)::TEXT::JSONB) WHERE id = $1 RETURNING *',
+            [pollId]
+        );
+
+        return updatedPoll;
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+}
+
 module.exports = {
     getPolls,
     getPoll,
     createPoll,
     votePoll,
+    checkVote
 };
