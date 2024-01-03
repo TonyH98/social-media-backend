@@ -3,7 +3,8 @@ const db = require("../db/dbConfig")
 const getPolls = async (user_id) => {
     try{
         const allPolls = await db.any(
-            `SELECT * FROM polls WHERE polls.user_id = $1`
+            `SELECT * FROM polls WHERE polls.user_id = $1`,
+            user_id
         )
         return allPolls
     }
@@ -16,7 +17,7 @@ const getPolls = async (user_id) => {
 const getPoll = async (id) => {
     try{
         const allPolls = await db.one(
-            `SELECT * FROM polls WHERE polls.id = $1`
+            `SELECT * FROM polls WHERE polls.id = $1`, id
         )
         return allPolls
     }
@@ -40,12 +41,8 @@ const createPoll = async (poll) => {
     }
 }
 
-const votePoll = async (pollId , userId, selectedOption) => {
+const votePoll = async (pollId) => {
     try{
-        await db.one(
-            `INSERT INTO poll_votes (poll_id , user_id , selected_option) VALUES ($1, $2, $3, CURRENT_DATE)`,
-            [pollId, userId, selectedOption]
-        )
         const updatePoll = await db.one(
             'UPDATE polls SET options = jsonb_set(options, \'{values, 0, count}\', (COALESCE(options->\'values\'->0->>\'count\', \'0\')::INT + 1)::TEXT::JSONB) WHERE id = $1 RETURNING *',
             [pollId]
@@ -95,6 +92,8 @@ const checkVote = async (pollId, userId, selectedOption) => {
         return error
     }
 }
+
+
 
 module.exports = {
     getPolls,

@@ -35,6 +35,7 @@ const interest = require("./controller/interestsController")
 
 const block = require("./controller/blockController")
 
+const poll = require("./controller/pollController")
 
 app.use("/users", user)
 
@@ -53,6 +54,8 @@ app.use("/tags", tags)
 app.use("/interests", interest)
 
 app.use("/block", block)
+
+app.use("/poll", poll)
 
 app.get("/", (req , res) => {
     res.send("Welcome to the social media app")
