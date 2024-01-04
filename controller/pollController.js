@@ -2,7 +2,8 @@ const express = require("express")
 
 const { getPolls,
         createPoll,
-        voteOnPoll} = require("../queries/polls")
+        voteOnPoll,
+        getUserVotes} = require("../queries/polls")
 
 const poll = express.Router()
 
@@ -53,5 +54,18 @@ poll.post("/", async (req , res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+poll.get("/:userId/votes/:pollId", async (req , res) => {
+    const {userId, pollId} = req.params
+    
+    try{
+        const votes = await getUserVotes(userId, pollId)
+        res.json(votes)
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+})
 
 module.exports = poll

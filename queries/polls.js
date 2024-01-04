@@ -1,18 +1,38 @@
 const db = require("../db/dbConfig")
 
 const getPolls = async (user_id) => {
-    try{
+    try {
         const allPolls = await db.any(
-            `SELECT id, question, options, user_id, user_name, to_char(polls.date_created, 'MM/DD/YYYY') AS time FROM polls WHERE polls.user_id = $1`,
+            `SELECT 
+                p.id,
+                p.question,
+                p.options,
+                to_char(p.date_created, 'MM/DD/YYYY') AS time,
+                json_build_object(
+                    'id', p.id,
+                    'username', p.user_name,
+                    'profile_name', u.profile_name,
+                    'profile_img', u.profile_img,
+                    'user_id', p.user_id
+                ) AS creator
+             FROM 
+                polls p
+             JOIN 
+                users u ON u.id = p.user_id
+             WHERE 
+                p.user_id = $1
+                
+                ORDER BY p.id DESC`,
             user_id
-        )
-        return allPolls
+        );
+        return allPolls;
+    } catch (error) {
+        console.error('Error in getPolls:', error);
+        throw error;
     }
-    catch(error){
-        console.log(error)
-        return error
-    }
-}
+};
+
+
 
 
 
@@ -116,11 +136,23 @@ const createPoll = async (poll) => {
 };
 
 
-
+const getUserVotes = async (userId, pollId) => {
+    try {
+        const allVotes = await db.one(
+            `SELECT selected_option , poll_id FROM poll_votes WHERE user_id =$1 AND poll_id = $2 `,
+            [userId, pollId]
+        );
+        return allVotes
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
 
 
 module.exports = {
     getPolls,
     createPoll,
-    voteOnPoll
+    voteOnPoll,
+    getUserVotes
 };
