@@ -3,7 +3,7 @@ const db = require("../db/dbConfig")
 const getPolls = async (user_id) => {
     try{
         const allPolls = await db.any(
-            `SELECT * FROM polls WHERE polls.user_id = $1`,
+            `SELECT id, question, options, user_id, user_name, to_char(polls.date_created, 'MM/DD/YYYY') AS time FROM polls WHERE polls.user_id = $1`,
             user_id
         )
         return allPolls
@@ -19,8 +19,8 @@ const getPolls = async (user_id) => {
 const createPoll = async (poll) => {
     try {
       const createPolls = await db.one(
-        `INSERT INTO polls (question , options, user_id) VALUES ($1 , $2, $3) RETURNING *`,
-        [poll.question, JSON.stringify(poll.options), poll.user_id]
+        `INSERT INTO polls (question , options, user_id, user_name) VALUES ($1 , $2, $3, $4) RETURNING *`,
+        [poll.question, JSON.stringify(poll.options), poll.user_id, poll.user_name]
       );
       return createPolls;
     } catch (error) {

@@ -24,24 +24,6 @@ CREATE TABLE users(
 );
 
 
-DROP TABLE IF EXISTS interests;
-CREATE TABLE interests (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(30)
-);
-
-
-DROP TABLE IF EXISTS users_interests;
-
-CREATE TABLE users_interests(
-    users_id INTEGER,
-    interests_id INTEGER,
-    added BOOLEAN NOT NULL,
-    UNIQUE (users_id, interests_id)
-);
-
-
-
 DROP TABLE IF EXISTS posts;
 CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
@@ -176,6 +158,7 @@ CREATE TABLE polls(
     question VARCHAR(255) NOT NULL,
     options JSONB NOT NULL,
     user_id INTEGER REFERENCES users(id),
+    user_name TEXT REFERENCES users(username),
     date_created DATE DEFAULT CURRENT_DATE
 );
 
