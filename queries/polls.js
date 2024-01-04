@@ -14,18 +14,7 @@ const getPolls = async (user_id) => {
     }
 }
 
-const getPoll = async (id) => {
-    try{
-        const allPolls = await db.one(
-            `SELECT * FROM polls WHERE polls.id = $1`, id
-        )
-        return allPolls
-    }
-    catch(error){
-        console.log(error)
-        return error
-    }
-}
+
 
 const createPoll = async (poll) => {
     try {
@@ -40,43 +29,86 @@ const createPoll = async (poll) => {
     }
   };
   
-
-
-
-  const checkVote = async (pollId, userId, poll) => {
+  const voteOnPoll = async (pollId, userId, selectedOption) => {
     try {
+        // Check if the user has already voted
         const existingVote = await db.oneOrNone(
-            `SELECT * FROM poll_votes WHERE poll_id = $1 AND user_id = $2`,
+            'SELECT selected_option FROM poll_votes WHERE poll_id = $1 AND user_id = $2',
             [pollId, userId]
         );
 
         if (existingVote) {
-            await db.one(
-                `UPDATE poll_votes SET selected_option = $1, 
-                vote_date = CURRENT_DATE WHERE poll_id = $2 
-                AND user_id = $3`,
-                [poll.selected_option, pollId, userId]
-            );
+            // User has already voted
+            if (existingVote.selected_option !== selectedOption) {
+                // User is changing their vote
+                const query = `
+                    WITH updated_vote AS (
+                        UPDATE poll_votes
+                        SET selected_option = $1
+                        WHERE poll_id = $2 AND user_id = $3
+                        RETURNING *
+                    )
+                    UPDATE polls
+                    SET options = (
+                        SELECT jsonb_agg(
+                            CASE
+                                WHEN option->>'text' = $1
+                                    THEN jsonb_build_object('text', option->>'text', 'count', ((option->>'count')::int + 1)::text)
+                                WHEN option->>'text' = $4
+                                    THEN jsonb_build_object('text', option->>'text', 'count', ((option->>'count')::int - 1)::text)
+                                ELSE
+                                    option
+                            END
+                        )
+                        FROM jsonb_array_elements((SELECT options FROM polls WHERE id = $2)::jsonb) option
+                    )
+                    WHERE id = $2
+                    RETURNING *;
+                `;
+
+                const result = await db.tx(async (t) => {
+                    const voteUpdate = await t.oneOrNone(query, [selectedOption, pollId, userId, existingVote.selected_option]);
+                    return voteUpdate;
+                });
+
+                return result;
+            } else {
+                // User selected the same option again, no need to update
+                return { message: 'User selected the same option again.' };
+            }
         } else {
-            await db.none(
-                `INSERT INTO poll_votes
-                 (poll_id, user_id, selected_option, vote_date)
-                  VALUES ($1, $2, $3, CURRENT_DATE)`,
-                [pollId, userId, poll.selected_option]
-            );
+            // User hasn't voted yet, insert a new vote
+            const query = `
+                WITH updated_vote AS (
+                    INSERT INTO poll_votes (poll_id, user_id, selected_option)
+                    VALUES ($2, $3, $1)
+                    ON CONFLICT (poll_id, user_id) DO UPDATE
+                    SET selected_option = $1
+                    RETURNING *
+                )
+                UPDATE polls
+                SET options = (
+                    SELECT jsonb_agg(
+                        CASE
+                            WHEN option->>'text' = $1
+                                THEN jsonb_build_object('text', option->>'text', 'count', ((option->>'count')::int + 1)::text)
+                            ELSE
+                                option
+                        END
+                    )
+                    FROM jsonb_array_elements((SELECT options FROM polls WHERE id = $2)::jsonb) option
+                )
+                WHERE id = $2
+                RETURNING *;
+            `;
+
+            const result = await db.tx(async (t) => {
+                const voteUpdate = await t.oneOrNone(query, [selectedOption, pollId, userId]);
+                return voteUpdate;
+            });
+
+            return result;
         }
-
-        const updatedPoll = await db.one(
-            `UPDATE polls 
-            SET options = jsonb_set(options, 
-            '{values, 0, count}',
-            (COALESCE(options->'values'->0->>'count', '0')::INT + 1)::TEXT::JSONB) 
-            WHERE id = $1 
-            RETURNING *`,
-            [pollId]
-        );
-
-        return updatedPoll;
     } catch (error) {
         console.log(error);
         return error;
@@ -86,9 +118,9 @@ const createPoll = async (poll) => {
 
 
 
+
 module.exports = {
     getPolls,
-    getPoll,
     createPoll,
-    checkVote
+    voteOnPoll
 };

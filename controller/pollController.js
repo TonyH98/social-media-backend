@@ -1,9 +1,8 @@
 const express = require("express")
 
 const { getPolls,
-        getPoll,
         createPoll,
-        checkVote} = require("../queries/polls")
+        voteOnPoll} = require("../queries/polls")
 
 const poll = express.Router()
 
@@ -37,12 +36,22 @@ poll.post("/", async (req , res) => {
  })
 
 
-poll.put("/:pollId/check/:userId", async (req , res) => {
-    const { pollId , userId} = req.params;
-      
-    const vote= await checkVote(pollId , userId, req.body);
+ poll.put("/:pollId/check/:userId", async (req, res) => {
+    try {
+        const { pollId, userId } = req.params;
+        const selectedOption = req.body.selected_option; // Assuming selected_option is the key in your request body
 
-    res.status(200).json(vote);
-})
+        if (!selectedOption) {
+            return res.status(400).json({ error: 'Selected option is required in the request body' });
+        }
+
+        const vote = await voteOnPoll(pollId, userId, selectedOption);
+
+        res.status(200).json(vote);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 module.exports = poll

@@ -185,5 +185,5 @@ CREATE TABLE poll_votes(
     user_id INTEGER REFERENCES users(id),
     selected_option TEXT,
     vote_date DATE DEFAULT CURRENT_DATE,
-    PRIMARY KEY (poll_id, user_id)
+    UNIQUE (poll_id, user_id)
 );
