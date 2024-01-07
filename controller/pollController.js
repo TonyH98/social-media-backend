@@ -3,7 +3,8 @@ const express = require("express")
 const { getPolls,
         createPoll,
         voteOnPoll,
-        getUserVotes} = require("../queries/polls")
+        getUserVotes,
+        allVotes} = require("../queries/polls")
 
 const poll = express.Router()
 
@@ -60,6 +61,19 @@ poll.get("/:userId/votes/:pollId", async (req , res) => {
     
     try{
         const votes = await getUserVotes(userId, pollId)
+        res.json(votes)
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+})
+
+poll.get("/:pollId/votes", async (req , res) => {
+    const {pollId} = req.params
+    
+    try{
+        const votes = await allVotes( pollId)
         res.json(votes)
     }
     catch(error){

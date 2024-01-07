@@ -155,7 +155,7 @@ CREATE TABLE users_block(
 DROP TABLE IF EXISTS polls;
 CREATE TABLE polls(
     id SERIAL PRIMARY KEY, 
-    question VARCHAR(255) NOT NULL,
+    question VARCHAR(100) NOT NULL,
     options JSONB NOT NULL,
     user_id INTEGER REFERENCES users(id),
     user_name TEXT REFERENCES users(username),

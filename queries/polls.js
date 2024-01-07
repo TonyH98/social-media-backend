@@ -150,9 +150,33 @@ const getUserVotes = async (userId, pollId) => {
 }
 
 
+
+const allVotes = async (pollId) => {
+    try{
+        const allVotes = await db.one(
+            `SELECT options FROM polls WHERE id = $1`,
+            pollId
+        )
+        
+        const totalVotes = allVotes.options.reduce((sum, option) => sum + parseInt(option.count, 10), 0);
+
+        const result = {
+            votes: totalVotes
+          };
+
+        return result
+    }
+    catch(error){
+        console.error(error);
+        throw error;
+    }
+}
+
+
 module.exports = {
     getPolls,
     createPoll,
     voteOnPoll,
-    getUserVotes
+    getUserVotes,
+    allVotes
 };
