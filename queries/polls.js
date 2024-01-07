@@ -6,6 +6,7 @@ const getPolls = async (user_id) => {
             `SELECT 
                 p.id,
                 p.question,
+                p.answer,
                 p.options,
                 to_char(p.date_created, 'MM/DD/YYYY') AS time,
                 json_build_object(
@@ -39,8 +40,8 @@ const getPolls = async (user_id) => {
 const createPoll = async (poll) => {
     try {
       const createPolls = await db.one(
-        `INSERT INTO polls (question , options, user_id, user_name) VALUES ($1 , $2, $3, $4) RETURNING *`,
-        [poll.question, JSON.stringify(poll.options), poll.user_id, poll.user_name]
+        `INSERT INTO polls (question , options, user_id, user_name, answer) VALUES ($1 , $2, $3, $4, $5) RETURNING *`,
+        [poll.question, JSON.stringify(poll.options), poll.user_id, poll.user_name, poll.answer]
       );
       return createPolls;
     } catch (error) {

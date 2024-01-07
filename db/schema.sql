@@ -159,6 +159,7 @@ CREATE TABLE polls(
     options JSONB NOT NULL,
     user_id INTEGER REFERENCES users(id),
     user_name TEXT REFERENCES users(username),
+    answer TEXT,
     date_created DATE DEFAULT CURRENT_DATE
 );
 
