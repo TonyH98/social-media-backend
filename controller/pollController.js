@@ -6,7 +6,12 @@ const { getPolls,
         getUserVotes,
         allVotes} = require("../queries/polls")
 
-const poll = express.Router()
+const poll = express.Router({mergeParams: true})
+
+const reply = require("./repliesPollController")
+
+poll.use("/:pollId/reply", reply)
+
 
 poll.get("/:userId", async (req , res) =>{
     

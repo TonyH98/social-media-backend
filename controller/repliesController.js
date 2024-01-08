@@ -55,16 +55,7 @@ reply.post("/", upload.single('posts_img'), async (req , res) => {
 })
 
 
-reply.delete("/:id", async (req , res) => {
-    const {id} = req.params
-    const deleteReply = await deleteReply(id)
-    if(deleteReply.id){
-        res.status(200).json(deleteReply)
-    }
-    else{
-        res.status(404).json("Reply not found")
-    }
-})
+
 
 
 reply.post("/:userId/reactR/:replyId", async (req , res) => {

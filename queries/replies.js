@@ -218,22 +218,8 @@ const createReply = async (post) => {
         console.log(error);
         return error;
       }
-
-
-
 };
 
-const deleteReply = async (id) => {
-    try{
-        const deletePost = await db.one(
-            'DELETE FROM replies WHERE id = $1 RETURNING *', id
-        )
-        return deletePost
-    }
-    catch(error){
-        return error
-    }
-}
 
 
 const createReactionR = async (react, creatorId, userId, replyId) => {
@@ -302,4 +288,4 @@ const getReaction = async (id) => {
 
 
 
-module.exports = {deleteReply , createReply, getReplies, createReactionR, getReaction}
+module.exports = { createReply, getReplies, createReactionR, getReaction}
