@@ -4,7 +4,7 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
-const {deleteReply , createReply, getReplies, createReactionR, getReaction} = require("../queries/replies")
+const {createReply, getReplies, createReactionR, getReaction} = require("../queries/replies")
 
 const reply = express.Router({mergeParams: true})
 

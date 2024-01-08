@@ -42,6 +42,26 @@ CREATE TABLE posts (
     date_created DATE DEFAULT CURRENT_DATE
 );
 
+DROP TABLE IF EXISTS polls;
+CREATE TABLE polls(
+    id SERIAL PRIMARY KEY, 
+    question VARCHAR(100) NOT NULL,
+    options JSONB NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+    user_name TEXT REFERENCES users(username),
+    answer TEXT,
+    date_created DATE DEFAULT CURRENT_DATE
+);
+
+DROP TABLE IF EXISTS poll_votes;
+CREATE TABLE poll_votes(
+    poll_id INTEGER REFERENCES polls(id),
+    user_id INTEGER REFERENCES users(id),
+    selected_option TEXT,
+    vote_date DATE DEFAULT CURRENT_DATE,
+    UNIQUE (poll_id, user_id)
+);
+
 
 DROP TABLE IF EXISTS hashtags;
 CREATE TABLE hashtags(
@@ -64,6 +84,7 @@ DROP TABLE IF EXISTS replies;
 CREATE TABLE replies(
     id SERIAL PRIMARY KEY,
     posts_id INTEGER REFERENCES posts(id),
+    poll_id INTEGER REFERENCES polls(id),
     user_id INTEGER REFERENCES users(id),
     content VARCHAR(500),
     posts_img TEXT,
@@ -89,6 +110,7 @@ CREATE TABLE post_hashtags (
     user_id INTEGER REFERENCES users(id),
     post_id INTEGER REFERENCES posts(id),
     reply_id INTEGER REFERENCES replies(id),
+    poll_id INTEGER REFERENCES polls(id),
     hashtag_id INTEGER REFERENCES hashtags(id)
 );
 
@@ -102,7 +124,8 @@ CREATE TABLE favorite(
     users_id INTEGER REFERENCES users(id),
     creator_id INTEGER,
     posts_id INTEGER,
-    reply_id INTEGER
+    reply_id INTEGER,
+    poll_id INTEGER
 );
 
 
@@ -123,6 +146,7 @@ CREATE TABLE notifications(
     sender_id INTEGER REFERENCES users(id),
     posts_id INTEGER REFERENCES posts(id),
     reply_id INTEGER REFERENCES replies(id),
+    poll_id INTEGER REFERENCES polls(id),
     is_read BOOLEAN DEFAULT FALSE,
     selected BOOLEAN DEFAULT FALSE
 );
@@ -152,22 +176,3 @@ CREATE TABLE users_block(
     block_id INTEGER
 );
 
-DROP TABLE IF EXISTS polls;
-CREATE TABLE polls(
-    id SERIAL PRIMARY KEY, 
-    question VARCHAR(100) NOT NULL,
-    options JSONB NOT NULL,
-    user_id INTEGER REFERENCES users(id),
-    user_name TEXT REFERENCES users(username),
-    answer TEXT,
-    date_created DATE DEFAULT CURRENT_DATE
-);
-
-DROP TABLE IF EXISTS poll_votes;
-CREATE TABLE poll_votes(
-    poll_id INTEGER REFERENCES polls(id),
-    user_id INTEGER REFERENCES users(id),
-    selected_option TEXT,
-    vote_date DATE DEFAULT CURRENT_DATE,
-    UNIQUE (poll_id, user_id)
-);
