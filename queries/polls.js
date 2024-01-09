@@ -34,7 +34,38 @@ const getPolls = async (user_id) => {
 };
 
 
-
+const getPoll = async (pollId) => {
+    try {
+        const poll = await db.one(
+            `SELECT 
+                p.id,
+                p.question,
+                p.answer,
+                p.options,
+                to_char(p.date_created, 'MM/DD/YYYY') AS time,
+                json_build_object(
+                    'id', p.id,
+                    'username', p.user_name,
+                    'profile_name', u.profile_name,
+                    'profile_img', u.profile_img,
+                    'user_id', p.user_id
+                ) AS creator
+             FROM 
+                polls p
+             JOIN 
+                users u ON u.id = p.user_id
+             WHERE 
+                p.id = $1
+                
+                ORDER BY p.id DESC`,
+            pollId
+        );
+        return poll;
+    } catch (error) {
+        console.error('Error in getPolls:', error);
+        throw error;
+    }
+};
 
 
 const createPoll = async (poll) => {
@@ -176,6 +207,7 @@ const allVotes = async (pollId) => {
 
 module.exports = {
     getPolls,
+    getPoll,
     createPoll,
     voteOnPoll,
     getUserVotes,

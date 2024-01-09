@@ -2,6 +2,7 @@ const express = require("express")
 
 const { getPolls,
         createPoll,
+        getPoll,
         voteOnPoll,
         getUserVotes,
         allVotes} = require("../queries/polls")
@@ -19,6 +20,21 @@ poll.get("/:userId", async (req , res) =>{
     
     try{
         const poll = await getPolls(userId)
+        res.json(poll)
+    }
+    catch(error){
+        console.log(error)
+        return error
+    }
+     
+})
+
+poll.get("/:pollId", async (req , res) =>{
+    
+    const {pollId} = req.params
+    
+    try{
+        const poll = await getPoll(pollId)
         res.json(poll)
     }
     catch(error){

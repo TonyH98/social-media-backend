@@ -22,7 +22,7 @@ const getReplies = async (pollId) => {
         FROM replies r 
         JOIN users ON users.id = r.user_id
         WHERE r.poll_id = $1
-        GROUP BY r.id, r.posts_id, users.username, users.firstname, users.lastname, users.profile_name, users.profile_img;`,
+        GROUP BY r.id, r.poll_id, users.username, users.firstname, users.lastname, users.profile_name, users.profile_img;`,
         pollId
 
         );
