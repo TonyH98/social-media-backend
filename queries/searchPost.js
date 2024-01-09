@@ -57,6 +57,35 @@ const searchReply = async (tagName) => {
 };
 
 
+
+const searchPoll = async (tagName) => {
+  try {
+    const search = await db.any(`
+      SELECT ph.poll_id AS id, ph.user_id, ph.hashtag_id,
+      h.tag_names, p.question, p.answer, p.options, u.username,
+     to_char(p.date_created, 'MM/DD/YYYY') AS time,
+      json_build_object(
+        'username', u.username,
+        'profile_name', u.profile_name,
+        'profile_img', u.profile_img,
+        'id', u.id
+      ) as creator
+      FROM post_hashtags ph
+      JOIN polls p ON p.id = ph.poll_id
+      JOIN hashtags h ON h.id = ph.hashtag_id
+      JOIN users u ON u.id = ph.user_id
+      WHERE h.tag_names = $1`,
+      tagName
+    );
+    console.log(tagName);
+    return search;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
+
 const getAllSearchPosts = async (tagName) => {
 
 try{
@@ -137,5 +166,5 @@ catch(error){
 }
 
 
-  module.exports = {searchPost , searchReply, getAllSearchPosts}
+  module.exports = {searchPost , searchReply, getAllSearchPosts, searchPoll}
   

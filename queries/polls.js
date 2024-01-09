@@ -1,5 +1,10 @@
 const db = require("../db/dbConfig")
 
+const nodemailer = require('nodemailer');
+
+
+const password = process.env.Email_Password
+
 const getPolls = async (user_id) => {
     try {
         const allPolls = await db.any(
@@ -50,14 +55,9 @@ const getPoll = async (pollId) => {
                     'profile_img', u.profile_img,
                     'user_id', p.user_id
                 ) AS creator
-             FROM 
-                polls p
-             JOIN 
-                users u ON u.id = p.user_id
-             WHERE 
-                p.id = $1
-                
-                ORDER BY p.id DESC`,
+             FROM polls p
+             JOIN users u ON u.id = p.user_id
+             WHERE p.id = $1`,
             pollId
         );
         return poll;
@@ -69,18 +69,59 @@ const getPoll = async (pollId) => {
 
 
 const createPoll = async (poll) => {
+    let addPoll = null
     try {
-      const createPolls = await db.one(
-        `INSERT INTO polls (question , options, user_id, user_name, answer) VALUES ($1 , $2, $3, $4, $5) RETURNING *`,
-        [poll.question, JSON.stringify(poll.options), poll.user_id, poll.user_name, poll.answer]
-      );
-      return createPolls;
+    addPoll = await db.tx(async (t) => {
+        const createPolls = await t.one(
+            `INSERT INTO polls (question , options, user_id, user_name, answer) VALUES ($1 , $2, $3, $4, $5) RETURNING *`,
+            [poll.question, JSON.stringify(poll.options), poll.user_id, poll.user_name, poll.answer]
+          );
+          const hashtags = poll.question.match(/#(\w+)/g);
+          if (hashtags) {
+            for(const hash of hashtags){
+              try{
+                const existingHashtag = await db.oneOrNone(
+                  `SELECT id FROM hashtags WHERE tag_names = $1`,
+                  hash
+                )
+  
+                if(!existingHashtag){
+                  const insertedHashtag = await db.one(
+                    `INSERT INTO hashtags (tag_names) VALUES ($1) RETURNING *`,
+                    hash
+                  )
+                  await t.none(
+                    'INSERT INTO post_hashtags (poll_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                    [createPolls.id, insertedHashtag.id, poll.user_id]
+                  )
+                }
+                else{
+                  await t.none(
+                    'INSERT INTO post_hashtags (poll_id, hashtag_id, user_id) VALUES ($1, $2, $3)',
+                    [createPolls.id, existingHashtag.id, poll.user_id]
+                  );
+                }
+              }
+              catch(error){
+                if (error.code !== '23505') {
+                  throw error;
+                }
+              }
+            }
+            return createPolls
+          }
+       
+    })
+
+    return addPoll
     } catch (error) {
       console.log(error);
       return error;
     }
   };
   
+
+
   const voteOnPoll = async (pollId, userId, selectedOption) => {
     try {
         // Check if the user has already voted

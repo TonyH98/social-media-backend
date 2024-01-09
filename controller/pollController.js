@@ -29,7 +29,7 @@ poll.get("/:userId", async (req , res) =>{
      
 })
 
-poll.get("/:pollId", async (req , res) =>{
+poll.get("/:pollId/details", async (req , res) =>{
     
     const {pollId} = req.params
     
