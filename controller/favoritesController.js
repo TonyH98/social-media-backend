@@ -7,7 +7,10 @@ const {getAllFavoritesPosts,
     getAllFavoritesReplies, 
     addFavoritesReplies, 
     deleteFavoriteReplies,
-    getAllFavorites} = require("../queries/favorites")
+    getAllFavorites,
+    getAllFavoritesPolls,
+    addFavoritesPolls,
+    deleteFavoritePolls} = require("../queries/favorites")
 
 
 const fav = express.Router()
@@ -126,6 +129,19 @@ fav.delete("/:userId/deleteR/:replyId", async (req , res) => {
 })
 
 
+fav.delete("/:userId/deleteP/:pollId", async (req , res) => {
+   
+    const {userId, pollId} = req.params
+
+    const deleteFav = await deleteFavoritePolls(userId , pollId)
+
+    if(deleteFav){
+        res.status(200).json(deleteFav)
+    }
+
+
+})
+
 fav.get("/:id/all", async (req , res) => {
     const {id} = req.params
 
@@ -133,7 +149,39 @@ fav.get("/:id/all", async (req , res) => {
     res.json(getFav)
 })
 
+fav.post("/:userId/favP/:pollId", async (req , res) => {
 
+    const {userId , pollId} = req.params
+    
+    try{
+        const fav = await addFavoritesPolls(userId , pollId, req.body)
+    
+        res.json(fav)
+    }
+    
+    catch(error){
+        console.log(error)
+        res.status(400).json({ error: error });
+    }
+    
+    })
+
+
+    fav.get("/:id/polls", async (req , res) =>{
+    
+        const {id} = req.params
+        
+        try{
+            const allFav = await getAllFavoritesPolls(id)
+            res.json(allFav)
+        }
+        catch(error){
+            console.log(error)
+            return error
+        }
+        
+        
+        })
 
 module.exports = fav
 

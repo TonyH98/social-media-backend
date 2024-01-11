@@ -150,6 +150,67 @@ const addFavoritesReplies = async (userId, replyId, fav) => {
     }
 
 
+    const getAllFavoritesPolls = async (userId) => {
+        try {
+            const favoritesByUser = await db.any(
+                `SELECT fr.favorites, fr.selected, fr.poll_id, fr.users_id,
+                json_build_object(
+                    'creator_id', fr.creator_id,
+                    'question', p.question,
+                    'date_created', to_char(p.date_created, 'MM/DD/YYYY'),
+                    'profile_img', u.profile_img,
+                    'username', u.username,
+                    'profile_name', u.profile_name,
+                    'options', p.options
+                ) AS post_creator
+                FROM favorite fr
+                JOIN users u ON u.id = fr.creator_id
+                JOIN polls p ON p.id = fr.poll_id
+                JOIN users f ON f.id = fr.users_id
+                WHERE fr.users_id = $1`,
+                userId
+            );
+            return favoritesByUser;
+        } catch (error) {
+            console.log(error);
+            return error;
+        }
+    };
+    
+    
+    const addFavoritesPolls = async (userId, pollId, fav) => {
+    
+        try{
+            const addFav = await db.one(
+                `INSERT INTO favorite (users_id, poll_id, creator_id, favorites, selected) VALUES ($1, $2, $3, $4, $5)`,
+                [userId, pollId, fav.creator_id, true, false]
+            )
+            return addFav
+        }
+        catch(error){
+            console.log(error)
+            return error
+        }
+        
+        }
+    
+        const deleteFavoritePolls = async (userId , pollId) => {
+            try{
+            const deleteFav = await db.one(
+            `DELETE FROM favorite WHERE favorite.users_id = $1 AND favorite.poll_id = $2`,
+            [userId , pollId]
+               )
+               return deleteFav
+            }
+            catch(error){
+                console.log(error)
+                return error
+            }
+        }
+
+
+
+
     const getAllFavorites = async (user_id) => {
         
         try{
@@ -230,4 +291,7 @@ module.exports={getAllFavoritesPosts,
     getAllFavoritesReplies, 
     addFavoritesReplies, 
     deleteFavoriteReplies,
-    getAllFavorites}
+    getAllFavorites,
+    getAllFavoritesPolls,
+    addFavoritesPolls,
+    deleteFavoritePolls}
