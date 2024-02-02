@@ -20,23 +20,31 @@ const getPolls = async (user_id) => {
                     'profile_name', u.profile_name,
                     'profile_img', u.profile_img,
                     'user_id', p.user_id
-                ) AS creator
+                ) AS creator,
+                (SELECT options FROM polls WHERE id = p.id) AS votes
              FROM 
                 polls p
              JOIN 
                 users u ON u.id = p.user_id
              WHERE 
                 p.user_id = $1
-                
-                ORDER BY p.id DESC`,
+             ORDER BY p.id DESC`,
             user_id
         );
-        return allPolls;
+
+        // Calculate total votes for each poll
+        const pollsWithVotes = allPolls.map((poll) => {
+            const totalVotes = poll.votes.reduce((sum, option) => sum + parseInt(option.count, 10), 0);
+            return { ...poll, totalVotes };
+        });
+
+        return pollsWithVotes;
     } catch (error) {
         console.error('Error in getPolls:', error);
         throw error;
     }
 };
+
 
 
 const getPoll = async (pollId) => {
@@ -54,13 +62,18 @@ const getPoll = async (pollId) => {
                     'profile_name', u.profile_name,
                     'profile_img', u.profile_img,
                     'user_id', p.user_id
-                ) AS creator
+                ) AS creator,
+                (SELECT options FROM polls WHERE id = p.id) AS votes
              FROM polls p
              JOIN users u ON u.id = p.user_id
              WHERE p.id = $1`,
             pollId
         );
-        return poll;
+       
+            const totalVotes = poll.votes.reduce((sum, option) => sum + parseInt(option.count, 10), 0);
+            return { ...poll, totalVotes };
+        
+        
     } catch (error) {
         console.error('Error in getPolls:', error);
         throw error;
@@ -224,26 +237,6 @@ const getUserVotes = async (userId, pollId) => {
 
 
 
-const allVotes = async (pollId) => {
-    try{
-        const allVotes = await db.one(
-            `SELECT options FROM polls WHERE id = $1`,
-            pollId
-        )
-        
-        const totalVotes = allVotes.options.reduce((sum, option) => sum + parseInt(option.count, 10), 0);
-
-        const result = {
-            votes: totalVotes
-          };
-
-        return result
-    }
-    catch(error){
-        console.error(error);
-        throw error;
-    }
-}
 
 
 module.exports = {
@@ -251,6 +244,5 @@ module.exports = {
     getPoll,
     createPoll,
     voteOnPoll,
-    getUserVotes,
-    allVotes
+    getUserVotes
 };

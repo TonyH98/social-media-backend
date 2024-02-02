@@ -4,8 +4,7 @@ const { getPolls,
         createPoll,
         getPoll,
         voteOnPoll,
-        getUserVotes,
-        allVotes} = require("../queries/polls")
+        getUserVotes} = require("../queries/polls")
 
 const poll = express.Router({mergeParams: true})
 
@@ -90,17 +89,5 @@ poll.get("/:userId/votes/:pollId", async (req , res) => {
     }
 })
 
-poll.get("/:pollId/votes", async (req , res) => {
-    const {pollId} = req.params
-    
-    try{
-        const votes = await allVotes( pollId)
-        res.json(votes)
-    }
-    catch(error){
-        console.log(error)
-        return error
-    }
-})
 
 module.exports = poll
