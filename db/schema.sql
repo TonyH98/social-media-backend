@@ -30,7 +30,7 @@ CREATE TABLE posts (
     user_name TEXT REFERENCES users(username),
     user_id INTEGER REFERENCES users(id),
     content TEXT,
-    posts_img TEXT,
+    posts_img JSONB,
     gif TEXT,
     repost BOOLEAN,
     repost_id INTEGER,
