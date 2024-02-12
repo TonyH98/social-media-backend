@@ -38,7 +38,8 @@ const storage = multer.diskStorage({
   const upload = multer({
     storage,
     limits: {
-      fileSize: Infinity
+        fileSize: Infinity, // No limit on file size
+        fieldSize: Infinity, // No limit on field size
     },
   });
 
@@ -89,16 +90,22 @@ posts.get("/:id", async (req , res) => {
 
 
 
-posts.post("/", upload.single('posts_img'), async (req , res) => {
-    try{
-        const post = await createPost(req.body)
-        res.json(post)
-    }
-    catch(error){
-        console.log(error)
-        res.status(400).json({ error: error });
-    }
-})
+    posts.post("/", upload.array('posts_img'), async (req, res) => {
+        try {
+            const files = req.files;
+            console.log(files)
+            const post = {
+                ...req.body,
+                posts_img: files.map(file => ({ text: file.filename }))
+            };
+            const createdPost = await createPost(post);
+            res.json(createdPost);
+        } catch (error) {
+            console.error(error);
+            res.status(400).json({ error: "Failed to create post" });
+        }
+    });
+    
 
 
 posts.post("/:username/repost/:postId", async (req , res) => {
