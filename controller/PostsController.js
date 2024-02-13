@@ -92,11 +92,11 @@ posts.get("/:id", async (req , res) => {
 
     posts.post("/", upload.array('posts_img'), async (req, res) => {
         try {
-            const files = req.files;
-            console.log(files)
+            
+           
             const post = {
                 ...req.body,
-                posts_img: files.map(file => ({ text: file.filename }))
+                posts_img: req.body.posts_img
             };
             const createdPost = await createPost(post);
             res.json(createdPost);

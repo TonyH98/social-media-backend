@@ -243,8 +243,8 @@ const createPost = async (post) => {
           `INSERT INTO posts
            (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin, url, url_img, url_title)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-          [post.user_name, post.content, post.user_id,  JSON.stringify(post.posts_img),
-             post.gif, false, null, 0, false, null, null, null]
+          [post.user_name, post.content, post.user_id, post.posts_img,
+          post.gif, false, null, 0, false, null, null, null]
         );
   
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -302,7 +302,7 @@ const createPost = async (post) => {
           }
         }
   
-        console.log(insertedPost)
+     
     
         return insertedPost;
 
