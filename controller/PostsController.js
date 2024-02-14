@@ -90,7 +90,7 @@ posts.get("/:id", async (req , res) => {
 
 
 
-    posts.post("/", upload.array('posts_img'), async (req, res) => {
+    posts.post("/", upload.array('posts_img', 4), async (req, res) => {
         try {
             
            

@@ -87,7 +87,7 @@ CREATE TABLE replies(
     poll_id INTEGER REFERENCES polls(id),
     user_id INTEGER REFERENCES users(id),
     content VARCHAR(500),
-    posts_img TEXT,
+    posts_img JSONB,
     gif Text,
     url TEXT,
     url_img TEXT,

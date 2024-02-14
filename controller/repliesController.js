@@ -44,7 +44,7 @@ catch(error){
 })
 
 
-reply.post("/", upload.single('posts_img'), async (req , res) => {
+reply.post("/", upload.array('posts_img', 4), async (req , res) => {
     try{
         const post = await createReply(req.body)
         res.json(post)

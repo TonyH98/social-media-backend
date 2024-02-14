@@ -39,7 +39,9 @@ const getAllPosts = async (user_name) => {
         );
 
         for (let post of posts) {
-          if (!(post.content === null || post.content === '') || !(post.posts_img === null || post.posts_img === '') || !(post.gif === null || post.gif === '')) {
+          if (!(post.content === null || post.content === '') || 
+          !(post.posts_img === null || post.posts_img === '') ||
+           !(post.gif === null || post.gif === '')) {
             if (!allPosts[post.id]) {
               allPosts[post.id] = post;
             }
@@ -171,7 +173,7 @@ const createPost = async (post) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, 
               $8, $9, $10, $11, $12) RETURNING *`,
           [post.user_name, postContent, post.user_id, 
-         JSON.stringify(post.posts_img),
+         post.posts_img,
           post.gif, false, null, 0, false, articleUrl, articleImage, articleTitle]
         );
 
