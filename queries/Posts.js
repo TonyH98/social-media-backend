@@ -169,12 +169,12 @@ const createPost = async (post) => {
           `INSERT INTO posts
            (user_name, content, user_id, posts_img, gif, 
             repost, repost_id, repost_counter, 
-            pin, url, url_img, url_title)
+            pin, url, url_img, url_title, views)
             VALUES ($1, $2, $3, $4, $5, $6, $7, 
-              $8, $9, $10, $11, $12) RETURNING *`,
+              $8, $9, $10, $11, $12, $13) RETURNING *`,
           [post.user_name, postContent, post.user_id, 
          post.posts_img,
-          post.gif, false, null, 0, false, articleUrl, articleImage, articleTitle]
+          post.gif, false, null, 0, false, articleUrl, articleImage, articleTitle, 0]
         );
 
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -243,10 +243,10 @@ const createPost = async (post) => {
       else{
         const insertedPost = await t.one(
           `INSERT INTO posts
-           (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin, url, url_img, url_title)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+           (user_name, content, user_id, posts_img, gif, repost, repost_id, repost_counter, pin, url, url_img, url_title, views)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
           [post.user_name, post.content, post.user_id, post.posts_img,
-          post.gif, false, null, 0, false, null, null, null]
+          post.gif, false, null, 0, false, null, null, null, 0]
         );
   
         const mentionedUsers = post.content.match(/@(\w+)/g);
@@ -434,8 +434,8 @@ const editPosts = async (id, post) => {
       );
     }
     const edit = await db.one(
-      'UPDATE posts SET repost_counter=$1, pin=$2 WHERE id=$3 RETURNING *',
-      [post.repost_counter, post.pin, id]
+      'UPDATE posts SET repost_counter=$1, pin=$2, views=$3 WHERE id=$4 RETURNING *',
+      [post.repost_counter, post.pin, post.views, id]
     );
 
     return edit;

@@ -39,6 +39,7 @@ CREATE TABLE posts (
     url_img TEXT,
     url_title TEXT,
     pin BOOLEAN,
+    views INTEGER,
     date_created DATE DEFAULT CURRENT_DATE
 );
 
