@@ -57,74 +57,51 @@ const transporter = nodemailer.createTransport({
   }
 
 
-const addBlock = async (userId, blockId) => {
-         try {
+  const addBlock = async (userId, blockId) => {
+    try {
         const result = await db.tx(async (t) => {
-            const insertBlock = await db.none(
-                `INSERT INTO users_block (user_id, block_id) VALUES ($1, $2)`,
+            // Insert block entry, ignore if it already exists
+            await t.none(
+                `INSERT INTO users_block (user_id, block_id) 
+                VALUES ($1, $2) 
+                ON CONFLICT (user_id, block_id) DO NOTHING`,
                 [userId, blockId]
             );
 
-            try {
-                await t.manyOrNone(
-                    `DELETE FROM favorite WHERE 
-                    (users_id = $1 AND creator_id = $2) OR 
-                    (users_id = $2 AND creator_id = $1)`,
-                    [userId, blockId]
-                );
+            // Batch delete queries for performance
+            await t.none(
+                `DELETE FROM favorite WHERE (users_id, creator_id) IN (($1, $2), ($2, $1));
+                DELETE FROM post_reactions WHERE (user_id, creator_id) IN (($1, $2), ($2, $1));
+                DELETE FROM reply_reactions WHERE (user_id, creator_id) IN (($1, $2), ($2, $1));
+                DELETE FROM notifications WHERE (users_id, sender_id) IN (($1, $2), ($2, $1));
+                DELETE FROM users_followers WHERE (user_id, following_id) IN (($1, $2), ($2, $1));`,
+                [userId, blockId]
+            );
 
-                
-                await t.manyOrNone(
-                    `DELETE FROM post_reactions WHERE (user_id = $1 AND creator_id = $2) OR 
-                    (user_id = $2 AND creator_id = $1)`,
-                    [userId, blockId]
-                )
-                await t.manyOrNone(
-                    `DELETE FROM reply_reactions WHERE (user_id = $1 AND creator_id = $2) OR 
-                    (user_id = $2 AND creator_id = $1)`,
-                    [userId, blockId]
-                )
-                    
-                await t.manyOrNone(
-                    `DELETE FROM notifications WHERE (users_id = $1 AND sender_id = $2) OR
-                    (users_id = $2 AND sender_id =$1)`,
-                    [userId, blockId]
-                )
+            // Fetch both user details in one query
+            const userData = await t.one(
+                `SELECT u1.username AS blocker_username, u2.firstname, u2.email, u2.notifications
+                FROM users u1 
+                JOIN users u2 ON u2.id = $2
+                WHERE u1.id = $1`,
+                [userId, blockId]
+            );
 
-                   await t.manyOrNone(
-                    `DELETE FROM users_followers WHERE (user_id = $1 AND following_id = $2) OR
-                    (user_id = $2 AND following_id =$1)`,
-                    [userId, blockId]
-                )
-               
-                const blockUser = await db.one(
-                    `SELECT firstname, email, notifications FROM users WHERE id = $1`,
-                    [blockId]
-                )
-
-                const user = await db.one(
-                    `SELECT username FROM users WHERE id = $1`,
-                    [userId]
-                )
-
-                if(blockUser.notifications){
-                    await sendEmail(blockUser.email, blockUser.firstname, user.username)
-                }
-            
-            } catch (error) {
-                console.log(error);
-                return error;
+            // Send email if blocked user has notifications enabled
+            if (userData.notifications) {
+                await sendEmail(userData.email, userData.firstname, userData.blocker_username);
             }
 
-            return insertBlock;
+            return { success: true, message: "User blocked successfully" };
         });
 
         return result;
     } catch (error) {
-        console.log(error);
-        return error;
+        console.error("Error in addBlock:", error);
+        return { success: false, message: "An error occurred while blocking the user" };
     }
 };
+
 
 
 
